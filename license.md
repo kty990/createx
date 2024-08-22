@@ -1,6 +1,6 @@
-Note Force - **Software License Agreement**
+CreatEx - **Software License Agreement**
 
-*Copyright 2023 Ty Kutcher*
+*Copyright 2024 Ty Kutcher*
 
 Permission is hereby granted, _free of charge_, to any person obtaining a copy of this software and associated documentation files (the "Software"), to use the Software AS IS and without any warranty. The author disclaims all warranties, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose, and noninfringement.
 
@@ -8,4 +8,4 @@ Permission is hereby granted, _free of charge_, to any person obtaining a copy o
 
 No distribution of the Software is allowed without prior written permission from the author.
 
-The software may be obtained from [github](https://github.com/kty990/noteforce/edit/main/license.md) while the repository is public.
+The software may be obtained from [github](https://github.com/kty990/createx/master/license.md) while the repository is public.
