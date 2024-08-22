@@ -8,4 +8,4 @@ Permission is hereby granted, _free of charge_, to any person obtaining a copy o
 
 No distribution of the Software is allowed without prior written permission from the author.
 
-The software may be obtained from [github](https://github.com/kty990/createx/master/license.md) while the repository is public.
+The software may be obtained from [github](https://github.com/kty990/createx/blob/master/license.md) while the repository is public.
