@@ -1,0 +1,42 @@
+{
+  "name": "createx",
+  "version": "0.1.5",
+  "main": "./index.js",
+  "author": "Ty Kutcher",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron .",
+    "build": "electron-builder",
+    "package": "electron-packager . \"Note Force\" --platform=win32 --arch=x64 --out=build/ --overwrite",
+    "wbuild": "webpack"
+  },
+  "build": {
+    "appId": "me.createx.guicreator",
+    "productName": "Createx",
+    "directories": {
+      "output": "dist/installers"
+    },
+    "extraFiles": [],
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "./dist/images/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "license": "license.md"
+    }
+  },
+  "keywords": [],
+  "license": "MIT",
+  "description": "",
+  "dependencies": {
+    "node-imap": "^0.9.6"
+  },
+  "devDependencies": {
+    "electron": "^25.9.8"
+  }
+}
