@@ -1,5 +1,5 @@
 class Component {
-    constructor(name, parent, group = null) {
+    constructor(name, parent, group = null, onSetElement = () => { }) {
         this.name = name;
         this.parent = parent;
         this.group = group;
@@ -8,6 +8,7 @@ class Component {
             width: '100px',
             height: '100px'
         };
+        this.onSetElement = onSetElement;
         this.position = {
             x: '0px',
             y: '0px'
@@ -22,6 +23,7 @@ class Component {
         this.element = e;
         this.element.style.overflow = 'hidden';
         console.log(e);
+        this.onSetElement(e);
     }
 
     copy() {
@@ -41,6 +43,12 @@ class Component {
         this.element = e;
         return e;
     }
+
+    setProperty(name, value) {
+        if (this.properties) {
+            this.properties[name] = value;
+        }
+    }
 }
 
 class Button extends Component {
@@ -53,6 +61,7 @@ class Button extends Component {
             border_radius: '10px',
             background_color: 'var(--body)',
         }
+        this.properties = this.preview;
     }
 }
 
@@ -70,6 +79,7 @@ class Text extends Component {
             text_content: 'TEXT HERE',
             text_shadow: '#000 1px 5px 10px'
         }
+        this.properties = this.preview;
     }
 }
 
@@ -84,6 +94,7 @@ class ProgressBar extends Component {
             border_radius: '1px',
             background: `linear-gradient(90deg,${this.background},${this.background})`,
         }
+        this.properties = this.preview;
         let p = [];
         for (let i = 0; i < 101; i++) {
             if (i <= 60) {
@@ -110,9 +121,45 @@ class ProgressBar extends Component {
 }
 
 class DropdownMenu extends Component {
+    static mains = {};
+    static id = 0;
+
     constructor(parent, dropdownSelections, group) {
         super("Dropdown Menu", parent, group);
+        this.dropdowns = 0;
         this.selections = dropdownSelections;
+        this.preview = {
+            type: 'p',
+            text_content: 'TITLE',
+            width: '100px',
+            height: "10px",
+            text_align: 'center',
+            border_radius: '1px',
+            background_color: 'var(--interaction)',
+            border_color: 'var(--interaction)',
+            border_style: 'solid',
+            border_width: '1px'
+        }
+        this.properties = this.preview;
+    }
+
+    setElement(element) {
+        this.element = element;
+        let tmp = document.createElement('div');
+        tmp.style.display = 'flex';
+        tmp.style.flexDirection = 'column';
+        tmp.style.width = 'fit-content';
+        tmp.style.maxWidth = '100%';
+        tmp.style.position = 'absolute';
+        tmp.style.top = '100%';
+        tmp.style.left = '0';
+        tmp.style.visibility = 'hidden';
+        this.main = tmp;
+        this.element.appendChild(this.main);
+        console.log(this.main);
+        console.log("this.main @super^")
+
+        return this.element;
     }
 
     activate() {
@@ -121,15 +168,44 @@ class DropdownMenu extends Component {
         }
         this.element.addEventListener("click", () => {
             // Show dropdown
+            if (this.visible == undefined) {
+                this.visible = 'visible';
+            } else {
+                this.visible = (this.visible == 'visible') ? 'hidden' : 'visible';
+            }
+            this.element.querySelector("div").style.visibility = this.visible;
+            this.element.style.height = (this.visible) ? 'fit-content' : `${this.properties.height || 10}px`;
         })
+    }
+
+    addDropdown() {
+        console.log(this.main);
+        console.log('this.main^');
+        let e = document.createElement("input");
+        e.type = 'text';
+        e.value = `Dropdown ${++this.dropdowns}`;
+        e.id = `Dropdown ${this.dropdowns}`;
+        e.style.backgroundColor = 'var(--interaction)';
+        e.style.borderColor = 'var(--interaction-border)';
+        e.style.borderStyle = 'solid';
+        e.style.borderWidth = '1px';
+        this.main.appendChild(e);
+    }
+
+    removeDropdown() {
+        let element = document.getElementById(`Dropdown ${this.dropdowns--}`);
+        element.remove();
     }
 }
 
 class Property {
-    constructor(name, itype, ...allowedComponents) {
+    constructor(name, itype, allowedComponents, action = () => { }) {
         this.components = allowedComponents;
         this.name = name;
         this.inputType = itype;
+        if (itype == 'button') {
+            this.action = action;
+        }
     }
     isAllowed(componentName) {
         return this.components.includes(componentName) || this.components.includes("*");
@@ -142,6 +218,9 @@ class Property {
         tmp.appendChild(name);
         let input = document.createElement("input");
         input.type = this.inputType;
+        if (this.action) {
+            input.addEventListener("click", this.action);
+        }
         tmp.appendChild(input);
         return tmp;
     }
@@ -166,24 +245,32 @@ const registry = {
     'DropdownMenu': DropdownMenu
 }
 
+var selectedElement = null;
+
 const properties = {
-    'name': new Property('Name', 'text', '*'),
-    'color': new Property('Foreground Color', 'color', '*'),
-    'background_color': new Property("Background Color", 'color', '*'),
-    'textContent': new Property('Text', 'text', 'Text'),
-    'x': new Property('X', 'number', '*'),
-    'y': new Property('Y', 'number', '*'),
-    'width': new Property('Width', 'number', '*'),
-    'height': new Property('Height', 'number', '*'),
-    'progress': new Property('Progress', 'number', 'Progress Bar')
+    'name': new Property('Name', 'text', ['*']),
+    'color': new Property('Foreground Color', 'color', ['*']),
+    'background_color': new Property("Background Color", 'color', ['*']),
+    'textContent': new Property('Text', 'text', ['Text']),
+    'x': new Property('X', 'number', ['*']),
+    'y': new Property('Y', 'number', ['*']),
+    'width': new Property('Width', 'number', ['*']),
+    'height': new Property('Height', 'number', ['*']),
+    'progress': new Property('Progress', 'number', ['Progress Bar']),
+    'addDropdown': new Property('Add Option', 'button', ['Dropdown Menu'], (event) => {
+        const component = selectedElement.comp;
+        component.addDropdown();
+    }),
+    'removeDropdown': new Property('Remove Option', 'button', ['Dropdown Menu'], (event) => {
+        const component = selectedElement.comp;
+        component.removeDropdown();
+    })
 }
 
 const dragdropComponents = []
 let displayedProperties = [];
 
 /* HTML Content Editting & Logic */
-
-var selectedElement = null;
 
 const propertyElement = document.getElementById("properties");
 const lib = document.getElementById("componentlibrary");
@@ -194,7 +281,8 @@ const propertyApply = propertyElement.querySelector("#apply");
 const library = [
     new Button(null, null),
     new Text(null, null),
-    new ProgressBar(null, null)
+    new ProgressBar(null, null),
+    new DropdownMenu(null, null)
 ]
 
 for (let component of library) {
@@ -287,6 +375,10 @@ for (let component of library) {
             tmp.style.width = c.size.width;
             tmp.style.height = c.size.height;
             c.setElement(tmp);
+            if (c instanceof DropdownMenu) {
+                c.activate();
+                console.warn("Activated");
+            }
 
             tmp.addEventListener("click", () => {
                 selectedElement = { comp: c, element: tmp };
@@ -369,6 +461,7 @@ propertyApply.addEventListener("click", () => {
                 console.log("Continue");
                 continue;
             }
+            c.setProperty(p.name, v);
             if (p.name == "textContent") {
                 selectedElement.element.textContent = v;
                 console.warn(`Setting ${p.name} to ${v}`);
@@ -393,7 +486,7 @@ propertyApply.addEventListener("click", () => {
             switch (p.name) {
                 case 'name':
                     selectedElement.comp.name = p.element.querySelector("input").value;
-                    p.element.querySelector("input").placeholder = c.name;
+                    p.element.querySelector("input").placeholder = selectedElement.comp.name;
                     break;
                 case 'color':
                     p.element.querySelector("input").placeholder = c.element.style.color;
@@ -417,6 +510,7 @@ propertyApply.addEventListener("click", () => {
                     p.element.querySelector("input").placeholder = parseInt(c.element.style.height.replace('px', '')) || c.size.height;
 
             }
+            p.element.querySelector("input").value = null;
         }
 
     }
