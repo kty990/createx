@@ -275,8 +275,13 @@ let displayedProperties = [];
 const propertyElement = document.getElementById("properties");
 const lib = document.getElementById("componentlibrary");
 const dragdrop = document.getElementById("drag-drop");
+const compType = document.getElementById("comp-type").querySelector("p");
 
 const propertyApply = propertyElement.querySelector("#apply");
+
+function getTypeOf(comp) {
+    return comp.constructor.name;
+}
 
 const library = [
     new Button(null, null),
@@ -383,7 +388,7 @@ for (let component of library) {
             tmp.addEventListener("click", () => {
                 selectedElement = { comp: c, element: tmp };
                 for (let p of Array.from(propertyElement.children)) {
-                    if (p.id != "label" && p.id != 'apply') {
+                    if (p.id != "label" && p.id != 'apply' && p.id != "comp-type") {
                         p.remove();
                     }
                 }
@@ -427,6 +432,7 @@ for (let component of library) {
                         propertyElement.insertBefore(tmp, propertyApply);
                     }
                 }
+                compType.textContent = `${getTypeOf(c)}`;
             })
 
             tmp.addEventListener("mouseenter", () => {
