@@ -262,12 +262,12 @@ const properties = {
     'y': new Property('Y', 'number', ['*']),
     'width': new Property('Width', 'number', ['*']),
     'height': new Property('Height', 'number', ['*']),
-    'progress': new Property('Progress', 'number', ['Progress Bar']),
-    'addDropdown': new Property('Add Option', 'button', ['Dropdown Menu'], (event) => {
+    'progress': new Property('Progress', 'number', ['ProgressBar']),
+    'addDropdown': new Property('Add Option', 'button', ['DropdownMenu'], (event) => {
         const component = selectedElement.comp;
         component.addDropdown();
     }),
-    'removeDropdown': new Property('Remove Option', 'button', ['Dropdown Menu'], (event) => {
+    'removeDropdown': new Property('Remove Option', 'button', ['DropdownMenu'], (event) => {
         const component = selectedElement.comp;
         component.removeDropdown();
     })
@@ -400,7 +400,7 @@ for (let component of library) {
                 }
                 displayedProperties = [];
                 for (const [name, p] of Object.entries(properties)) {
-                    if (p.isAllowed(c.name)) {
+                    if (p.isAllowed(getTypeOf(c))) {
                         let tmp = p.createElement();
                         displayedProperties.push({ name: name, element: tmp });
                         switch (name) {
@@ -526,7 +526,3 @@ propertyApply.addEventListener("click", () => {
 
     }
 })
-
-
-// Load elements from save
-

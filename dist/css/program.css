@@ -81,12 +81,39 @@ body {
     margin: 0;
 }
 
-#toolbars>#components {
-    filter: brightness(0.8);
+#toolbars>#tabs {
+    filter: brightness(0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#tabs>div {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--interaction);
+    border-color: var(--interaction-border);
+    border-style: solid;
+    border-width: 1px;
+    margin-right: 2px;
+    height: 80%;
+    width: fit-content;
+    padding-left: 2px;
+    padding-right: 2px;
+}
+
+#tabs>div:hover {
+    opacity: 0.5;
+    cursor: pointer;
+}
+
+#tabs>div>p {
+    font-size: 10px;
 }
 
 #toolbars>#animation {
-    filter: brightness(0.6);
+    filter: brightness(0.8);
 }
 
 #componentlibrary {
