@@ -24,6 +24,9 @@ class Component {
         this.element.style.overflow = 'hidden';
         console.log(e);
         this.onSetElement(e);
+        let properties = this.properties;
+        properties.name = this.name;
+        window.api.send("createComponent", properties);
     }
 
     copy() {
@@ -47,6 +50,9 @@ class Component {
     setProperty(name, value) {
         if (this.properties) {
             this.properties[name] = value;
+            console.log("Sending properties change: ");
+            console.log(JSON.stringify(this.properties));
+            window.api.send("editComponent", this.name, JSON.stringify(this.properties));
         }
     }
 }
@@ -455,7 +461,6 @@ for (let component of library) {
 
 propertyApply.addEventListener("click", () => {
 
-    // MODIFY THIS:: CHECK IF THE INPUT FIELD IS EMPTY. IF IT IS, DO NOT CHANGE
     if (selectedElement) {
         console.log(selectedElement.comp);
         console.log(displayedProperties.map(c => c.element));
@@ -521,5 +526,7 @@ propertyApply.addEventListener("click", () => {
 
     }
 })
+
+
 // Load elements from save
 
