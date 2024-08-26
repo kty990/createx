@@ -17,6 +17,7 @@
 body {
     background-color: #fff;
     overflow: hidden;
+    outline: unset;
 }
 
 #drag-drop {
@@ -26,6 +27,7 @@ body {
     width: 70vw;
     height: calc(85vh - 30px);
     background-color: #fff;
+    overflow: hidden;
 }
 
 #code-editor {
@@ -159,6 +161,7 @@ body {
     border-bottom-style: solid;
     border-width: 2px;
     margin: 0;
+    z-index: 999999999999;
     padding: 0;
     display: flex;
     justify-content: space-between;

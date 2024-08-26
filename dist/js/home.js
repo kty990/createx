@@ -283,6 +283,8 @@ const lib = document.getElementById("componentlibrary");
 const dragdrop = document.getElementById("drag-drop");
 const codeEditor = document.getElementById("code-editor");
 
+const Plabel = propertyElement.querySelector("#label");
+
 const compType = document.getElementById("comp-type").querySelector("p");
 const propertyApply = propertyElement.querySelector("#apply");
 
@@ -294,14 +296,17 @@ editor.addEventListener("click", () => {
     dragdrop.style.zIndex = '2';
     codeEditor.style.zIndex = '1';
     propertyApply.querySelector("p").textContent = "Apply"
+    Plabel.querySelector("p").textContent = "Properties";
+    document.getElementById("comp-type").style.visibility = 'visible';
     console.log("EDITOR");
 })
 
 code.addEventListener("click", () => {
     dragdrop.style.zIndex = '1';
     codeEditor.style.zIndex = '2';
-    propertyApply.querySelector("p").textContent = "Format Code"
-
+    propertyApply.querySelector("p").textContent = "Add New"
+    Plabel.querySelector("p").textContent = "Directory";
+    document.getElementById("comp-type").style.visibility = 'hidden';
     console.log("CODE");
 })
 
@@ -372,6 +377,7 @@ for (let component of library) {
         isDown = true;
         previewElement = e.cloneNode(true);
         previewElement.style.position = 'fixed';
+        previewElement.style.zIndex = '999999';
         document.body.addEventListener("mousemove", onDrag);
         previewElement.style.visibility = 'visible';
         document.body.appendChild(previewElement);
@@ -405,6 +411,7 @@ for (let component of library) {
             // Set size
             tmp.style.width = c.size.width;
             tmp.style.height = c.size.height;
+            tmp.style.zIndex = null;
             c.setElement(tmp);
             if (c instanceof DropdownMenu) {
                 c.activate();
@@ -520,10 +527,10 @@ propertyApply.addEventListener("click", () => {
                     p.element.querySelector("input").placeholder = selectedElement.comp.name;
                     break;
                 case 'color':
-                    p.element.querySelector("input").placeholder = c.element.style.color;
+                    p.element.querySelector("input").value = c.element.style.color;
                     break;
                 case 'backgroundColor':
-                    p.element.querySelector("input").placeholder = c.element.style.backgroundColor;
+                    p.element.querySelector("input").value = c.element.style.backgroundColor;
                     break;
                 case 'textContent':
                     p.element.querySelector('input').placeholder = c.element.textContent;
@@ -541,7 +548,9 @@ propertyApply.addEventListener("click", () => {
                     p.element.querySelector("input").placeholder = parseInt(c.element.style.height.replace('px', '')) || c.size.height;
 
             }
-            p.element.querySelector("input").value = null;
+            if (p.element.querySelector("input").type != "color") {
+                p.element.querySelector("input").value = null;
+            }
         }
 
     }
