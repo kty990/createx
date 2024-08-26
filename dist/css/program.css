@@ -34,7 +34,8 @@ body {
     left: 15vw;
     width: 70vw;
     height: calc(85vh - 30px);
-    background-color: #0f0;
+    background-color: #2d2d2d;
+    overflow-y: auto;
 }
 
 #toolbars {
@@ -403,12 +404,4 @@ body {
     height: 100%;
     display: flex;
     align-items: center;
-}
-
-.function {
-    color: var(--function);
-}
-
-.punctuation {
-    color: var(--punctuation);
 }
