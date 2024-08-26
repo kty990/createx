@@ -39,10 +39,10 @@
         </div>
 
         <div id="tabs">
-            <div>
+            <div id="editor">
                 <p>Editor</p>
             </div>
-            <div>
+            <div id="code">
                 <p>Code</p>
             </div>
         </div>
@@ -67,9 +67,12 @@
         </span>
     </div>
 
-    <div id="drag-drop"></div>
+    <div id="drag-drop" style="z-index: 2;"></div>
+    <div contenteditable="true" id="code-editor" style="z-index: 1;">
+    </div>
 
     <script src="../js/home.js"></script>
+    <script src="../js/code.js"></script>
     <script src="../js/program.js"></script>
 </body>
 

@@ -281,9 +281,29 @@ let displayedProperties = [];
 const propertyElement = document.getElementById("properties");
 const lib = document.getElementById("componentlibrary");
 const dragdrop = document.getElementById("drag-drop");
-const compType = document.getElementById("comp-type").querySelector("p");
+const codeEditor = document.getElementById("code-editor");
 
+const compType = document.getElementById("comp-type").querySelector("p");
 const propertyApply = propertyElement.querySelector("#apply");
+
+// Tabs
+const editor = document.getElementById("tabs").querySelector("#editor").querySelector('p'); // v editor
+const code = document.getElementById("tabs").querySelector("#code").querySelector('p'); // code editor
+
+editor.addEventListener("click", () => {
+    dragdrop.style.zIndex = '2';
+    codeEditor.style.zIndex = '1';
+    propertyApply.querySelector("p").textContent = "Apply"
+    console.log("EDITOR");
+})
+
+code.addEventListener("click", () => {
+    dragdrop.style.zIndex = '1';
+    codeEditor.style.zIndex = '2';
+    propertyApply.querySelector("p").textContent = "Format Code"
+
+    console.log("CODE");
+})
 
 function getTypeOf(comp) {
     return comp.constructor.name;

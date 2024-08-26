@@ -9,6 +9,9 @@
     --element: #23333b;
     --text: #f2f4f3;
     --text-hover: #575757;
+
+    --function: #9c5aec;
+    --punctuation: #69a0a09d;
 }
 
 body {
@@ -23,6 +26,15 @@ body {
     width: 70vw;
     height: calc(85vh - 30px);
     background-color: #fff;
+}
+
+#code-editor {
+    position: fixed;
+    top: calc(15vh + 30px);
+    left: 15vw;
+    width: 70vw;
+    height: calc(85vh - 30px);
+    background-color: #0f0;
 }
 
 #toolbars {
@@ -391,4 +403,12 @@ body {
     height: 100%;
     display: flex;
     align-items: center;
+}
+
+.function {
+    color: var(--function);
+}
+
+.punctuation {
+    color: var(--punctuation);
 }
