@@ -9,3 +9,7 @@ Permission is hereby granted, _free of charge_, to any person obtaining a copy o
 No distribution of the Software is allowed without prior written permission from the author.
 
 The software may be obtained from [github](https://github.com/kty990/createx/blob/master/license.md) while the repository is public.
+
+Any applications made from or resulting from the use of 'CreatEx' abides by this license. Specifically:
+
+**In no event** shall the author be liable for any claim, damages, or other liability, whether in an action of contract, tort, or otherwise, arising from, out of, or in connection with the Software or the use or other dealings in the Software.

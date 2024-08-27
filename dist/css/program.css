@@ -20,6 +20,10 @@ body {
     outline: unset;
 }
 
+div {
+    outline: unset;
+}
+
 #drag-drop {
     position: fixed;
     top: calc(15vh + 30px);
@@ -38,6 +42,53 @@ body {
     height: calc(85vh - 30px);
     background-color: #2d2d2d;
     overflow-y: auto;
+}
+
+#directory {
+    height: 80%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    /* overflow: hidden; */
+    overflow-y: auto;
+}
+
+#apply {
+    display: flex;
+    width: 100%;
+    height: 30px;
+    align-items: center;
+    background-color: var(--interaction);
+    filter: brightness(1.5);
+    padding: 0;
+    margin: 0;
+    margin-top: auto;
+    margin-bottom: 30px;
+    border-top-style: double;
+    border-width: 5px;
+    border-color: var(--border);
+}
+
+#apply:hover {
+    background-color: var(--interaction-border);
+    cursor: pointer;
+}
+
+#apply:hover p {
+    color: var(--text-hover);
+}
+
+#apply>p {
+    width: 100%;
+    height: auto;
+    max-height: 10px;
+    font-size: 10px;
+    padding: 0;
+    margin: 0;
+    text-align: center;
+    color: var(--body);
+    font-weight: bold;
+
 }
 
 #toolbars {
@@ -178,8 +229,10 @@ body {
 }
 
 .property {
-    width: 15vw;
+    width: 100%;
     height: 25px;
+    min-height: 25px;
+    max-height: 25px;
     background-color: var(--interaction);
     border-color: var(--interaction-border);
     border-bottom-style: solid;
@@ -197,7 +250,7 @@ body {
 }
 
 .property>p {
-    width: calc(50% - 4vh);
+    width: 50%;
     height: auto;
     max-height: 100%;
     font-size: 1vh;
@@ -274,44 +327,6 @@ body {
 }
 
 #label>p {
-    width: 100%;
-    height: auto;
-    max-height: 10px;
-    font-size: 10px;
-    padding: 0;
-    margin: 0;
-    text-align: center;
-    color: var(--body);
-    font-weight: bold;
-
-}
-
-#apply {
-    display: flex;
-    width: 100%;
-    height: 30px;
-    align-items: center;
-    background-color: var(--interaction);
-    filter: brightness(1.5);
-    padding: 0;
-    margin: 0;
-    margin-top: auto;
-    margin-bottom: 30px;
-    border-top-style: double;
-    border-width: 5px;
-    border-color: var(--border);
-}
-
-#apply:hover {
-    background-color: var(--interaction-border);
-    cursor: pointer;
-}
-
-#apply:hover p {
-    color: var(--text-hover);
-}
-
-#apply>p {
     width: 100%;
     height: auto;
     max-height: 10px;

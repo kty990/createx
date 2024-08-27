@@ -279,6 +279,7 @@ let displayedProperties = [];
 /* HTML Content Editting & Logic */
 
 const propertyElement = document.getElementById("properties");
+const directory = document.getElementById("directory");
 const lib = document.getElementById("componentlibrary");
 const dragdrop = document.getElementById("drag-drop");
 const codeEditor = document.getElementById("code-editor");
@@ -292,7 +293,12 @@ const propertyApply = propertyElement.querySelector("#apply");
 const editor = document.getElementById("tabs").querySelector("#editor").querySelector('p'); // v editor
 const code = document.getElementById("tabs").querySelector("#code").querySelector('p'); // code editor
 
+function removeAll() {
+    directory.innerHTML = "";
+}
+
 editor.addEventListener("click", () => {
+    removeAll();
     dragdrop.style.zIndex = '2';
     codeEditor.style.zIndex = '1';
     propertyApply.querySelector("p").textContent = "Apply"
@@ -302,6 +308,7 @@ editor.addEventListener("click", () => {
 })
 
 code.addEventListener("click", () => {
+    removeAll();
     dragdrop.style.zIndex = '1';
     codeEditor.style.zIndex = '2';
     propertyApply.querySelector("p").textContent = "Add New"
@@ -320,6 +327,8 @@ const library = [
     new ProgressBar(null, null),
     new DropdownMenu(null, null)
 ]
+
+
 
 for (let component of library) {
     let preview = component.preview;
@@ -419,12 +428,8 @@ for (let component of library) {
             }
 
             tmp.addEventListener("click", () => {
+                removeAll();
                 selectedElement = { comp: c, element: tmp };
-                for (let p of Array.from(propertyElement.children)) {
-                    if (p.id != "label" && p.id != 'apply' && p.id != "comp-type") {
-                        p.remove();
-                    }
-                }
                 displayedProperties = [];
                 for (const [name, p] of Object.entries(properties)) {
                     if (p.isAllowed(getTypeOf(c))) {
@@ -462,7 +467,7 @@ for (let component of library) {
                             console.log("YES");
                             tmp.querySelector("input").value = selectedElement.comp.background;
                         }
-                        propertyElement.insertBefore(tmp, propertyApply);
+                        directory.appendChild(tmp);
                     }
                 }
                 compType.textContent = `${getTypeOf(c)}`;
@@ -487,7 +492,7 @@ for (let component of library) {
 }
 
 propertyApply.addEventListener("click", () => {
-
+    if (dragdrop.style.zIndex != '2') return;
     if (selectedElement) {
         console.log(selectedElement.comp);
         console.log(displayedProperties.map(c => c.element));

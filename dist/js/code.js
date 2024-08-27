@@ -1,22 +1,12 @@
 const code_storage = {
     files: [],
     visual: document.getElementById("code-editor"),
-    directory: document.getElementById("properties"),
+    directory: document.getElementById("directory"),
     formatButton: document.getElementById("apply")
 }
 
 function removeAll() {
-    const elementsToRemove = code_storage.directory.querySelectorAll(":not(span)");
-
-    elementsToRemove.forEach(element => {
-        if (element.parentNode !== null && element.parentNode !== undefined) {
-            // Skip if the parent is a span
-            if (element.parentNode.nodeName.toLowerCase() === "span") {
-                return;
-            }
-        }
-        element.remove();
-    });
+    code_storage.directory.innerHTML = "";
 }
 
 function displayFiles() {
@@ -27,7 +17,7 @@ function displayFiles() {
         let name = document.createElement("p");
         name.textContent = file;
         tmp.appendChild(name);
-        code_storage.directory.insertBefore(tmp, code_storage.formatButton);
+        code_storage.directory.appendChild(tmp);
     }
 }
 
