@@ -2,7 +2,7 @@ const code_storage = {
     files: [],
     visual: document.getElementById("code-editor"),
     directory: document.getElementById("directory"),
-    formatButton: document.getElementById("apply")
+    newFileButton: document.getElementById("apply")
 }
 
 function removeAll() {
@@ -24,7 +24,7 @@ function displayFiles() {
 /**
  * Add a new 'file' in storage, in directory
  */
-code_storage.formatButton.addEventListener("click", async () => {
+code_storage.newFileButton.addEventListener("click", async () => {
     if (code_storage.visual.style.zIndex == "1") return; // Not active
     let newFile = await window.api.invoke("newJSFile");
     code_storage.files.push(newFile);

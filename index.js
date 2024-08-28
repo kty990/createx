@@ -2,16 +2,11 @@ const { app, BrowserWindow, Menu, dialog, ipcMain, autoUpdater, shell } = requir
 const path = require('path');
 const fs = require('fs');
 
-const Prism = require('prismjs');
-const loadLanguages = require('prismjs/components/index.js');
-
 var licenseData;
 
 fs.readFile("./license.md", (err, data) => {
     licenseData = data;
 })
-
-loadLanguages(['javascript'])
 
 let devToolsOpened = false;
 
@@ -252,28 +247,6 @@ ipcMain.on("createComponent", (event, component) => {
 })
 ipcMain.on("close", () => {
     graphicsWindow.window.close();
-})
-
-ipcMain.on("getHighlightedCode", (event, code) => {
-    function indentCode(code) {
-        const lines = code.split('\n');
-        let indentationLevel = 0;
-        const indentedLines = lines.map(line => {
-            // Adjust indentation logic based on your specific requirements
-            if (line.startsWith('{')) {
-                indentationLevel++;
-            } else if (line.startsWith('}')) {
-                indentationLevel--;
-            }
-            return '  '.repeat(indentationLevel) + line;
-        });
-        return indentedLines.join('\n');
-    }
-
-    // Use the indented code with PrismJS
-    const indentedCode = indentCode(code);
-    let hcode = Prism.highlight(indentedCode, Prism.languages.javascript, 'javascript');
-    graphicsWindow.window.webContents.send("getHighlightedCode", hcode);
 })
 
 ipcMain.on("newJSFile", () => {
