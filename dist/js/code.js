@@ -1,6 +1,6 @@
 const code_storage = {
     files: [],
-    visual: document.getElementById("code-editor"),
+    visual: document.getElementById("editor"),
     directory: document.getElementById("directory"),
     newFileButton: document.getElementById("apply")
 }

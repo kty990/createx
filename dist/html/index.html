@@ -6,7 +6,15 @@
     <meta name="viewport" content="width=device-width">
     <title>CREATEX</title>
     <link href="../css/program.css" rel="stylesheet" type="text/css" />
-    <link href="../css/prism.css" rel="stylesheet" type="text/css" />
+
+    <!--     
+    <link href="../css/program.css" rel="stylesheet" type="text/css" />
+    <link href="../css/program.css" rel="stylesheet" type="text/css" />
+    <link href="../css/program.css" rel="stylesheet" type="text/css" />
+    <link href="../css/program.css" rel="stylesheet" type="text/css" />
+    <link href="../css/program.css" rel="stylesheet" type="text/css" /> -->
+
+    <!-- ./standalone-tokens.css , ./standaloneQuickInput.css , ./aria.css , ./style.css , ./hover.css-->
 </head>
 
 <body>
@@ -40,7 +48,7 @@
         </div>
 
         <div id="tabs">
-            <div id="editor">
+            <div id="editor-tab">
                 <p>Editor</p>
             </div>
             <div id="code">
@@ -70,11 +78,14 @@
     </div>
 
     <div id="drag-drop" style="z-index: 2;"></div>
-    <div contenteditable="true" id="code-editor" style="z-index: 1;">
-    </div>
+    <div id="editor" style="z-index: 1;"> </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/monaco-editor@latest/min/vs/loader.js"></script>
+    <script>
+        require.config({ paths: { vs: 'https://cdn.jsdelivr.net/npm/monaco-editor@latest/min/vs' } });
+    </script>
     <script src="../js/home.js"></script>
-    <script src="../js/code.js"></script>
+    <script type="module" src="../js/code.js"></script>
     <script src="../js/program.js"></script>
 </body>
 

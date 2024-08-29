@@ -282,7 +282,7 @@ const propertyElement = document.getElementById("properties");
 const directory = document.getElementById("directory");
 const lib = document.getElementById("componentlibrary");
 const dragdrop = document.getElementById("drag-drop");
-const codeEditor = document.getElementById("code-editor");
+const codeEditor = document.getElementById("editor");
 
 const Plabel = propertyElement.querySelector("#label");
 
@@ -290,7 +290,7 @@ const compType = document.getElementById("comp-type").querySelector("p");
 const propertyApply = propertyElement.querySelector("#apply");
 
 // Tabs
-const editor = document.getElementById("tabs").querySelector("#editor").querySelector('p'); // v editor
+const editor = document.getElementById("tabs").querySelector("#editor-tab").querySelector('p'); // v editor
 const code = document.getElementById("tabs").querySelector("#code").querySelector('p'); // code editor
 
 function removeAll() {
@@ -471,6 +471,42 @@ for (let component of library) {
                     }
                 }
                 compType.textContent = `${getTypeOf(c)}`;
+            })
+
+            let down = false;
+
+            document.addEventListener("mousedown", (e) => {
+                // Set up for dragging
+                if (e.target != tmp) return;
+                console.warn("Target: ", e.target);
+                console.warn("Tmp: ", tmp);
+                down = true;
+                console.log(`Down changed to: ${down}`)
+            })
+
+            document.addEventListener("mouseup", (e) => {
+                if (!down) {
+                    return;
+                }
+                down = false;
+                let rect = dragdrop.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                tmp.style.left = `${x}px`;
+                tmp.style.top = `${y}px`;
+                console.log(`Down changed to: ${down}`)
+            })
+
+            document.addEventListener("mousemove", (e) => {
+                // Appears to be a bug where down isnt reset to false
+
+                if (down) {
+                    console.log('Moving');
+                    const x = e.clientX;
+                    const y = e.clientY;
+                    tmp.style.left = `${x}px`;
+                    tmp.style.top = `${y}px`;
+                }
             })
 
             tmp.addEventListener("mouseenter", () => {

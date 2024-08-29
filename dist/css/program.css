@@ -34,7 +34,7 @@ div {
     overflow: hidden;
 }
 
-#code-editor {
+#editor {
     position: fixed;
     top: calc(15vh + 30px);
     left: 15vw;

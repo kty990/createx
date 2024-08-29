@@ -46,7 +46,7 @@ class GraphicsWindow {
             webPreferences: {
                 nodeIntegration: true,
                 spellcheck: false,
-                preload: path.join(__dirname, './dist/js/preload.js'),
+                preload: path.join(__dirname, './dist/js/preload.js')
             },
         });
 
