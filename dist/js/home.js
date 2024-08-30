@@ -319,6 +319,10 @@ function getTypeOf(comp) {
     return comp.constructor.name;
 }
 
+function rgbToHex(r, g, b) {
+    return "#" + (1 << 24 | r << 16 | g << 8 | b).toString(16).slice(1);
+}
+
 const library = [
     new Button(null, null),
     new Text(null, null),
@@ -438,7 +442,9 @@ for (let component of library) {
                                 tmp.querySelector("input").placeholder = c.name;
                                 break;
                             case 'color':
-                                tmp.querySelector("input").value = c.element.style.color;
+                                let values = c.element.style.color.replace("rgb", '').replace('(', '').replace(")", '').split(",");
+                                let hex = rgbToHex(values[0], values[1], values[2]);
+                                tmp.querySelector("input").value = hex;
                                 break;
                             case 'backgroundColor':
                                 tmp.querySelector("input").value = c.element.style.backgroundColor || c.element.style.background || "#f00";
@@ -569,7 +575,10 @@ propertyApply.addEventListener("click", () => {
                     p.element.querySelector("input").placeholder = selectedElement.comp.name;
                     break;
                 case 'color':
-                    p.element.querySelector("input").value = c.element.style.color;
+                    let values = c.element.style.color.replace("rgb", '').replace('(', '').replace(")", '').split(",");
+                    let hex = rgbToHex(values[0], values[1], values[2]);
+                    p.element.querySelector("input").value = hex;
+                    console.log(hex);
                     break;
                 case 'backgroundColor':
                     p.element.querySelector("input").value = c.element.style.backgroundColor;
