@@ -276,6 +276,10 @@ ipcMain.on("toggle-dev-tools", () => {
     }
 })
 
+ipcMain.on("executeDropdown", (event, id) => {
+    graphicsWindow.window.webContents.send(id, null);
+})
+
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
         app.quit();

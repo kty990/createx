@@ -400,6 +400,8 @@ body {
     margin: 0;
     z-index: 1000;
     color: var(--text);
+    font-size: 12px;
+    font-family: 'Rajdhani', sans-serif;
 }
 
 #file>div>p {
@@ -414,6 +416,8 @@ body {
     margin: 0;
     z-index: 1000;
     color: var(--text);
+    font-size: 12px;
+    font-family: 'Rajdhani', sans-serif;
 }
 
 #edit>div>p {
@@ -428,6 +432,8 @@ body {
     margin: 0;
     z-index: 1000;
     color: var(--text);
+    font-size: 12px;
+    font-family: 'Rajdhani', sans-serif;
 }
 
 #view>div>p {
