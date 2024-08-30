@@ -304,7 +304,6 @@ editor.addEventListener("click", () => {
     propertyApply.querySelector("p").textContent = "Apply"
     Plabel.querySelector("p").textContent = "Properties";
     document.getElementById("comp-type").style.visibility = 'visible';
-    console.log("EDITOR");
 })
 
 code.addEventListener("click", () => {
@@ -314,7 +313,6 @@ code.addEventListener("click", () => {
     propertyApply.querySelector("p").textContent = "Add New"
     Plabel.querySelector("p").textContent = "Directory";
     document.getElementById("comp-type").style.visibility = 'hidden';
-    console.log("CODE");
 })
 
 function getTypeOf(comp) {
@@ -325,7 +323,7 @@ const library = [
     new Button(null, null),
     new Text(null, null),
     new ProgressBar(null, null),
-    new DropdownMenu(null, null)
+    new DropdownMenu(null, null, null)
 ]
 
 
