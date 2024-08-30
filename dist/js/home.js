@@ -474,14 +474,17 @@ for (let component of library) {
             })
 
             let down = false;
+            let offset = {
+                x: 0,
+                y: 0
+            }
 
             document.addEventListener("mousedown", (e) => {
                 // Set up for dragging
                 if (e.target != tmp) return;
-                console.warn("Target: ", e.target);
-                console.warn("Tmp: ", tmp);
                 down = true;
-                console.log(`Down changed to: ${down}`)
+                offset.x = Math.abs(parseInt(`${tmp.style.left}`.replace('px', '')) - e.clientX);
+                offset.y = Math.abs(parseInt(`${tmp.style.top}`.replace('px', '')) - e.clientY);
             })
 
             document.addEventListener("mouseup", (e) => {
@@ -490,8 +493,8 @@ for (let component of library) {
                 }
                 down = false;
                 let rect = dragdrop.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
+                const x = e.clientX - offset.x
+                const y = e.clientY - offset.y;
                 tmp.style.left = `${x}px`;
                 tmp.style.top = `${y}px`;
                 console.log(`Down changed to: ${down}`)
@@ -502,8 +505,8 @@ for (let component of library) {
 
                 if (down) {
                     console.log('Moving');
-                    const x = e.clientX;
-                    const y = e.clientY;
+                    const x = e.clientX - offset.x
+                    const y = e.clientY - offset.y;
                     tmp.style.left = `${x}px`;
                     tmp.style.top = `${y}px`;
                 }
