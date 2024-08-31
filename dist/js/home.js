@@ -27,6 +27,7 @@ class Component {
         let properties = this.properties;
         properties.name = this.name;
         window.api.send("createComponent", properties);
+        console.log("Create component", this.name);
     }
 
     copy() {

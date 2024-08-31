@@ -149,16 +149,19 @@ async function exportProject() {
 
     const make = (comp) => {
         let stylized = "";
+        let text = "";
         for (const [key, value] of Object.entries(comp)) {
-            if (key != 'name') {
+            if (!['name', 'type'].includes(key) && key.toLowerCase() != "text_content") {
                 stylized += `${key}:${value};`
+            } else if (key.toLowerCase() == "text_content") {
+                text = value;
             }
         }
         stylized += `left:${comp.left}`;
         stylized += `top:${comp.top}`;
         stylized += `width:${comp.width}`;
         stylized += `height:${comp.height}`;
-        let e = `<${comp.type} style="${stylized}"></${comp.type}>`;
+        let e = `<${comp.type} style="${stylized}">${text}</${comp.type}>`;
         if (!isDoubleTagged(comp.type)) {
             e.replace(`</${comp.type}>`, "");
         }
@@ -249,6 +252,7 @@ ipcMain.on("editComponent", (_, name, d) => {
 })
 ipcMain.on("createComponent", (event, component) => {
     components.push(component);
+    console.log("Component created.", component);
 })
 ipcMain.on("close", () => {
     graphicsWindow.window.close();
