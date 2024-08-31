@@ -29,6 +29,16 @@ values.forEach(value => {
     })
 
     Array.from(value.querySelector('.dropdown').children).forEach(v => {
-        window.api.send("executeDropdown", v.id); // Logic handled in dropdown.js
+        console.warn("Activating", v.id);
+        v.addEventListener("click", () => {
+            window.api.send("executeDropdown", v.id);
+            let open = value.querySelector('.dropdown').style.visibility != 'visible';
+            if (lastActive != null) {
+                lastActive.querySelector('.dropdown').style.visibility = 'hidden';
+            }
+            value.querySelector(".dropdown").style.visibility = (open) ? 'visible' : 'hidden';
+            lastActive = null;
+        })
+
     })
 })

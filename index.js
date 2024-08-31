@@ -1,8 +1,10 @@
 const { app, BrowserWindow, Menu, dialog, ipcMain, autoUpdater, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const util = require('util');
 
 var licenseData;
+var currentFile;
 
 fs.readFile("./license.md", (err, data) => {
     licenseData = data;
@@ -99,6 +101,7 @@ class File {
 }
 
 
+// This has to be updated for .amk format
 async function exportProject() {
     // Get export destination
     const now = new Date();
@@ -115,64 +118,12 @@ async function exportProject() {
         = `${year}_${day}_${month} -${hour}_${minute}_${second} `;
 
     let { filePath, canceled } = await dialog.showSaveDialog({
-        defaultPath: `${year}_${month}_${day} -${hour}_${minute}_${second} `,
+        defaultPath: `${year}_${month}_${day} -${hour}_${minute}_${second}.amk`,
         filters: [
-            { name: 'All Files', extensions: ['*'] }
+            { name: 'CreatEx Files', extensions: ['amk'] }
         ]
     });
-
-    // Create export folder with format yyyy_dd_mm-hh_mm_ss
-    fs.mkdir(`${filePath.split(".")[0]}/license.md`, { recursive: true }, (err) => {
-        if (err) {
-            console.error('Error creating folder:', err);
-        } else {
-            console.log('Folder created successfully!');
-
-        }
-    });
-    fs.writeFile(`${filePath.split(".")[0]}/license`, licenseData);
-
-    // Generate html,css,js,images,misc folders
-    fs.mkdir(`${filePath.split(".")[0]}/src/html`, { recursive: true }, (err) => {
-        if (err) {
-            console.error('Error creating folder:', err);
-        } else {
-            console.log('Folder created successfully!');
-
-        }
-    });
-    fs.mkdir(`${filePath.split(".")[0]}/src/css`, { recursive: true }, (err) => {
-        if (err) {
-            console.error('Error creating folder:', err);
-        } else {
-            console.log('Folder created successfully!');
-
-        }
-    });
-    fs.mkdir(`${filePath.split(".")[0]}/src/js`, { recursive: true }, (err) => {
-        if (err) {
-            console.error('Error creating folder:', err);
-        } else {
-            console.log('Folder created successfully!');
-
-        }
-    });
-    fs.mkdir(`${filePath.split(".")[0]}/resources/images`, { recursive: true }, (err) => {
-        if (err) {
-            console.error('Error creating folder:', err);
-        } else {
-            console.log('Folder created successfully!');
-
-        }
-    });
-    fs.mkdir(`${filePath.split(".")[0]}/resources/sounds`, { recursive: true }, (err) => {
-        if (err) {
-            console.error('Error creating folder:', err);
-        } else {
-            console.log('Folder created successfully!');
-
-        }
-    });
+    if (canceled) return;
 
     const isDoubleTagged = (type) => {
         const singleTagged = [
@@ -198,8 +149,10 @@ async function exportProject() {
 
     const make = (comp) => {
         let stylized = "";
-        for (const [key, value] of Object.entries(comp.properties)) {
-            stylized += `${key}:${value};`
+        for (const [key, value] of Object.entries(comp)) {
+            if (key != 'name') {
+                stylized += `${key}:${value};`
+            }
         }
         stylized += `left:${comp.left}`;
         stylized += `top:${comp.top}`;
@@ -212,12 +165,64 @@ async function exportProject() {
         return e;
     }
 
-    // Populate folders
-    // HTML
+    let allComps = [];
+    for (const comp of components) {
+        console.log("comp")
+        console.log(comp);
+        let strComp = make(comp);
+        allComps.push(strComp);
+    }
 
-    // CSS
+    let result = allComps.join("\n");
 
-    // JS
+    result += `\n(LICENSE): ${licenseData}`;
+
+    let path = filePath;
+    if (!path.endsWith(".amk")) {
+        path += '.amk';
+    }
+
+    function stringToBinary(str) {
+        let binaryString = "";
+
+        for (let i = 0; i < str.length; i++) {
+            let charCode = str.charCodeAt(i);
+            let binaryChar = charCode.toString(2).padStart(8, "0");
+            binaryString += binaryChar + " ";
+        }
+
+        return binaryString;
+    }
+    fs.writeFile(path, stringToBinary(result), (err) => {
+    })
+}
+
+/**
+ * @returns {{result: Boolean, value: String, license: String}}
+ */
+async function openProject() {
+    function binaryToString(binaryString) {
+        let binaryChunks = binaryString.split(" ")
+        let asciiChars = binaryChunks.map(chunk => String.fromCharCode(parseInt(chunk, 2)));
+
+        // Join characters into a string
+        return asciiChars.join('');
+    }
+    let { filePaths, canceled } = await dialog.showOpenDialog({
+        defaultPath: ``,
+        filters: [
+            { name: 'CreatEx Files', extensions: ['amk'] }
+        ],
+        buttonLabel: "Open Project"
+    });
+    if (canceled) return;
+    const data = await util.promisify(fs.readFile)(filePaths[0]);
+    let tmp_v = binaryToString(data.toString());
+    let v = tmp_v.split("(LICENSE): ")[0];
+    let license = tmp_v.split("(LICENSE): ")[1];
+    console.log('v', v);
+    console.log('license', license);
+    return { result: data instanceof Buffer, value: v, license }
 }
 
 
@@ -274,6 +279,38 @@ ipcMain.on("toggle-dev-tools", () => {
         graphicsWindow.window.webContents.openDevTools();
         devToolsOpened = true;
     }
+})
+
+ipcMain.on("createFile", async () => {
+    console.log("createFile called");
+    let { filePath, canceled } = await dialog.showSaveDialog({
+        defaultPath: ``,
+        filters: [
+            { name: 'CreatEx Files', extensions: ['amk'] }
+        ],
+        buttonLabel: "Create"
+    });
+    if (canceled) return;
+    let path = filePath;
+    if (!path.endsWith('.amk')) {
+        path += '.amk';
+    }
+    currentFile = path;
+    fs.writeFile(path, '', (err) => {
+        graphicsWindow.window.webContents.send("createFile", { status: (err == null), error: err })
+    });
+})
+
+ipcMain.on("saveFile", () => {
+    exportProject();
+})
+
+ipcMain.on("openFile", async () => {
+    let result = await openProject();
+    console.log("\n\nOPEN\n\n")
+    console.log(result.value);
+    console.log("\n\nEND OF OPEN\n\n")
+    graphicsWindow.window.webContents.send("openFile", result);
 })
 
 ipcMain.on("executeDropdown", (event, id) => {
