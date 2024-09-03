@@ -8,6 +8,9 @@ class Component {
             width: '100px',
             height: '100px'
         };
+        this.onPropertyChange = (name, value) => {
+            console.log(`====== Property Change ======\nName: ${name}\nValue: ${value}\n`);
+        };
         this.onSetElement = onSetElement;
         this.position = {
             x: '0px',
@@ -17,6 +20,10 @@ class Component {
         if (this.parent) {
             this.parent.children.push(this);
         }
+    }
+
+    setOnPropertyChange(func) {
+        this.onPropertyChange = func;
     }
 
     setElement(e) {
@@ -51,8 +58,9 @@ class Component {
     setProperty(name, value) {
         if (this.properties) {
             this.properties[name] = value;
-            console.log("Sending properties change: ");
-            console.log(JSON.stringify(this.properties));
+            this.onPropertyChange(name, value, this.element);
+            // console.log("Sending properties change: ");
+            // console.log(JSON.stringify(this.properties));
             window.api.send("editComponent", this.name, JSON.stringify(this.properties));
         }
     }
@@ -77,7 +85,6 @@ class Text extends Component {
         super("Text", parent, group);
         this.preview = {
             type: 'p',
-            text_content: 'Text Here',
             width: '100px',
             height: "100px",
             left: "12.5%",
@@ -87,6 +94,29 @@ class Text extends Component {
             text_shadow: '#000 1px 5px 10px'
         }
         this.properties = this.preview;
+    }
+}
+
+class Img extends Component {
+    constructor(parent, group) {
+        super("Image", parent, group);
+        this.preview = {
+            type: 'img',
+            src: '',
+            alt: 'image',
+            width: '100px',
+            height: "100px",
+            left: "12.5%",
+            top: "30%",
+            color: 'var(--text-hover)',
+            text_shadow: '#000 1px 5px 10px'
+        }
+        this.properties = this.preview;
+        this.setOnPropertyChange((name, value, element) => {
+            console.log(`====== Property Change ======\nName: ${name}\nValue: ${value}\n`);
+            if (name == 'src') element.src = value;
+            if (name == 'alt') element.alt = value;
+        })
     }
 }
 
@@ -251,7 +281,8 @@ const registry = {
     'Button': Button,
     'Text': Text,
     'ProgressBar': ProgressBar,
-    'DropdownMenu': DropdownMenu
+    'DropdownMenu': DropdownMenu,
+    'Img': Img
 }
 
 var selectedElement = null;
@@ -273,7 +304,10 @@ const properties = {
     'removeDropdown': new Property('Remove Option', 'button', ['DropdownMenu'], (event) => {
         const component = selectedElement.comp;
         component.removeDropdown();
-    })
+    }),
+    'src_file': new Property("File", 'file', ['Img']),
+    'src_text': new Property("URL", 'text', ['Img']),
+    'alt': new Property("Alternate Text", 'text', ['Img'])
 }
 
 const dragdropComponents = []
@@ -330,7 +364,8 @@ const library = [
     new Button(null, null),
     new Text(null, null),
     new ProgressBar(null, null),
-    new DropdownMenu(null, null, null)
+    new DropdownMenu(null, null, null),
+    new Img(null, null)
 ]
 
 
@@ -468,6 +503,11 @@ for (let component of library) {
                                 tmp.querySelector("input").placeholder = parseInt(c.element.style.height.replace('px', ''));
                             case 'progress':
                                 tmp.querySelector("input").placeholder = selectedElement.comp.progress;
+                                break;
+                            case 'src_file':
+                                tmp.querySelector("input").placeholder = 'SRC TODO';
+                            case 'src_text':
+                                tmp.querySelector("input").placeholder = 'SRC TODO';
 
                         }
                         if (selectedElement.comp instanceof ProgressBar && (name == 'background_color')) {
@@ -538,14 +578,14 @@ for (let component of library) {
 propertyApply.addEventListener("click", () => {
     if (dragdrop.style.zIndex != '2') return;
     if (selectedElement) {
-        console.log(selectedElement.comp);
-        console.log(displayedProperties.map(c => c.element));
+        // console.log(selectedElement.comp);
+        // console.log(displayedProperties.map(c => c.element));
         const c = selectedElement.comp;
         for (let p of displayedProperties) {
             let v = p.element.querySelector("input").value;
-            console.log(v);
+            // console.log(v);
             if (`${v}`.length == 0 || v == null || v == undefined) {
-                console.log("Continue");
+                // console.log("Continue");
                 continue;
             }
             c.setProperty(p.name, v);
@@ -563,7 +603,7 @@ propertyApply.addEventListener("click", () => {
             } else {
                 console.warn(`Setting ${p.name} to ${v}`);
                 if (selectedElement.comp instanceof ProgressBar && p.name == 'background_color') {
-                    console.log("YES");
+                    // console.log("YES");
                     selectedElement.comp.background = v;
                     selectedElement.comp.setProgress(selectedElement.comp.progress);
                 } else {
@@ -579,7 +619,7 @@ propertyApply.addEventListener("click", () => {
                     let values = c.element.style.color.replace("rgb", '').replace('(', '').replace(")", '').split(",");
                     let hex = rgbToHex(values[0], values[1], values[2]);
                     p.element.querySelector("input").value = hex;
-                    console.log(hex);
+                    // console.log(hex);
                     break;
                 case 'backgroundColor':
                     p.element.querySelector("input").value = c.element.style.backgroundColor;
