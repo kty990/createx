@@ -165,7 +165,9 @@ class DropdownMenu extends Component {
         this.element.appendChild(this.main);
         console.log(this.main);
         console.log("this.main @super^")
-
+        let properties = this.properties;
+        properties.name = this.name;
+        window.api.send("createComponent", properties);
         return this.element;
     }
 
