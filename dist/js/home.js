@@ -64,6 +64,17 @@ class Component {
             window.api.send("editComponent", this.name, JSON.stringify(this.properties));
         }
     }
+
+    select() {
+        this.element.style.outlineStyle = 'solid';
+        this.element.style.outlineColor = 'var(--selected)';
+        this.selected = true;
+    }
+
+    deselect() {
+        this.element.style.outlineStyle = null;
+        this.selected = false;
+    }
 }
 
 class Button extends Component {
@@ -238,27 +249,42 @@ class DropdownMenu extends Component {
 }
 
 class Property {
+    static id = 0;
+
     constructor(name, itype, allowedComponents, action = () => { }) {
         this.components = allowedComponents;
         this.name = name;
-        this.inputType = itype;
+        this.itype = itype;
         if (itype == 'button') {
             this.action = action;
         }
+        this.id = ++Property.id;
     }
     isAllowed(componentName) {
         return this.components.includes(componentName) || this.components.includes("*");
     }
     createElement() {
+        let lbl = null;
+        if (this.itype == 'file') {
+            lbl = document.createElement("label");
+            lbl.setAttribute('for', `${this.id}`);
+            lbl.textContent = `Select`;
+        }
         let tmp = document.createElement("div");
         tmp.classList.add('property');
         let name = document.createElement("p");
         name.textContent = this.name;
         tmp.appendChild(name);
         let input = document.createElement("input");
-        input.type = this.inputType;
+        input.type = this.itype;
+        if (this.itype == 'file') {
+            input.id = `${this.id}`;
+        }
         if (this.action) {
             input.addEventListener("click", this.action);
+        }
+        if (lbl != null) {
+            tmp.appendChild(lbl);
         }
         tmp.appendChild(input);
         return tmp;
@@ -275,6 +301,33 @@ class Property {
         console.log(keys, values);
         return { keys, values };
     }
+    activate() { }
+}
+
+class Enum extends Property {
+    constructor(name, options, allowedComponents) {
+        super(name, 'ENUM', allowedComponents);
+    }
+
+    createElement() {
+        // Do this
+    }
+
+    activate() {
+        if (!this.element) {
+            throw new Error("Unable to activate without element generation. Call createElement() first.")
+        }
+        this.element.addEventListener("click", () => {
+            // Show dropdown
+            if (this.visible == undefined) {
+                this.visible = 'visible';
+            } else {
+                this.visible = (this.visible == 'visible') ? 'hidden' : 'visible';
+            }
+            this.element.querySelector("div").style.visibility = this.visible;
+            this.element.style.height = (this.visible) ? 'fit-content' : `${this.properties.height || 10}px`;
+        })
+    }
 }
 
 const registry = {
@@ -289,8 +342,8 @@ var selectedElement = null;
 
 const properties = {
     'name': new Property('Name', 'text', ['*']),
-    'color': new Property('Foreground Color', 'color', ['*']),
-    'background_color': new Property("Background Color", 'color', ['*']),
+    'color': new Property('Color', 'color', ['*']),
+    'background_color': new Property("Background", 'color', ['*']),
     'textContent': new Property('Text', 'text', ['Text']),
     'x': new Property('X', 'number', ['*']),
     'y': new Property('Y', 'number', ['*']),
@@ -307,7 +360,7 @@ const properties = {
     }),
     'src_file': new Property("File", 'file', ['Img']),
     'src_text': new Property("URL", 'text', ['Img']),
-    'alt': new Property("Alternate Text", 'text', ['Img'])
+    'alt': new Property("Alt Text", 'text', ['Img'])
 }
 
 const dragdropComponents = []
@@ -469,11 +522,14 @@ for (let component of library) {
 
             tmp.addEventListener("click", () => {
                 removeAll();
+                if (selectedElement != null) selectedElement.comp.deselect();
                 selectedElement = { comp: c, element: tmp };
+                c.select();
                 displayedProperties = [];
                 for (const [name, p] of Object.entries(properties)) {
                     if (p.isAllowed(getTypeOf(c))) {
                         let tmp = p.createElement();
+                        p.activate();
                         displayedProperties.push({ name: name, element: tmp });
                         switch (name) {
                             case 'name':
@@ -505,9 +561,9 @@ for (let component of library) {
                                 tmp.querySelector("input").placeholder = selectedElement.comp.progress;
                                 break;
                             case 'src_file':
-                                tmp.querySelector("input").placeholder = 'SRC TODO';
+                                tmp.querySelector("input").placeholder = selectedElement.comp.properties.src || "src";
                             case 'src_text':
-                                tmp.querySelector("input").placeholder = 'SRC TODO';
+                                tmp.querySelector("input").placeholder = selectedElement.comp.properties.src || "src";;
 
                         }
                         if (selectedElement.comp instanceof ProgressBar && (name == 'background_color')) {
@@ -558,11 +614,13 @@ for (let component of library) {
             })
 
             tmp.addEventListener("mouseenter", () => {
+                if (c.selected) return;
                 tmp.style.outline = "solid";
                 tmp.style.outlineColor = "var(--body)";
             })
 
             tmp.addEventListener("mouseleave", () => {
+                if (c.selected) return;
                 tmp.style.outline = 'unset';
             })
 
@@ -645,5 +703,14 @@ propertyApply.addEventListener("click", () => {
             }
         }
 
+    }
+})
+
+dragdrop.addEventListener("click", (e) => {
+    if (e.target != dragdrop) return;
+    if (selectedElement) {
+        selectedElement.comp.deselect();
+        selectedElement = null;
+        removeAll();
     }
 })

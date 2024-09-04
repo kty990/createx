@@ -1,6 +1,7 @@
 const code_storage = {
     files: [],
     visual: document.getElementById("editor"),
+    tab: document.getElementById("code"),
     directory: document.getElementById("directory"),
     newFileButton: document.getElementById("apply")
 }
@@ -35,5 +36,9 @@ code_storage.newFileButton.addEventListener("click", async () => {
         return n;
     });
     console.log(code_storage.files);
+    displayFiles();
+})
+
+code_storage.tab.addEventListener("click", () => {
     displayFiles();
 })

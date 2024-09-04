@@ -9,6 +9,7 @@
     --element: #23333b;
     --text: #f2f4f3;
     --text-hover: #575757;
+    --selected: #bb6130;
 
     --function: #9c5aec;
     --punctuation: #69a0a09d;
@@ -262,7 +263,7 @@ div {
     text-align: center;
 }
 
-.property>input {
+.property>input:not([type=file]) {
     width: 50%;
     height: 100%;
     background-color: var(--interaction);
@@ -274,6 +275,27 @@ div {
     color: var(--text);
     text-align: center;
     outline: unset;
+}
+
+.property>input[type=file] {
+    display: none;
+}
+
+.property>label {
+    display: block;
+    width: 50%;
+    height: auto;
+    max-height: 100%;
+    background-color: var(--interaction);
+    color: var(--text);
+    text-align: center;
+    border-right-style: solid;
+}
+
+.property>label:hover {
+    filter: brightness(0.5);
+    cursor: pointer;
+    color: var(--text-hover);
 }
 
 
