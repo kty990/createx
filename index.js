@@ -144,7 +144,7 @@ async function exportProject() {
             'param',
             'option'
         ];
-        return !singleTagged.includes(type.toLowerCase());
+        return !(singleTagged.includes(type.toLowerCase().trim()));
     }
 
     const make = (comp) => {
@@ -157,13 +157,13 @@ async function exportProject() {
                 text = value;
             }
         }
-        stylized += `left:${comp.left}`;
-        stylized += `top:${comp.top}`;
-        stylized += `width:${comp.width}`;
-        stylized += `height:${comp.height}`;
+        stylized += `left:${comp.left};`;
+        stylized += `top:${comp.top};`;
+        stylized += `width:${comp.width};`;
+        stylized += `height:${comp.height};`;
         let e = `<${comp.type} style="${stylized}">${text}</${comp.type}>`;
         if (!isDoubleTagged(comp.type)) {
-            e.replace(`</${comp.type}>`, "");
+            e = e.replace(`</${comp.type}>`, "");
         }
         return e;
     }

@@ -385,6 +385,7 @@ const code = document.getElementById("tabs").querySelector("#code").querySelecto
 
 function removeAll() {
     directory.innerHTML = "";
+    compType.textContent = "-";
 }
 
 editor.addEventListener("click", () => {
