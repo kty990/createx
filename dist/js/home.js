@@ -8,6 +8,7 @@ class Component {
             width: '100px',
             height: '100px'
         };
+        this.onhover = {};
         this.onPropertyChange = (name, value) => {
             console.log(`====== Property Change ======\nName: ${name}\nValue: ${value}\n`);
         };
@@ -35,6 +36,20 @@ class Component {
         properties.name = this.name;
         window.api.send("createComponent", properties);
         console.log("Create component", this.name);
+        this.element.addEventListener("mouseenter", () => {
+            for (const [key, value] of Object.entries(this.onhover)) {
+                if (['x', 'y', 'left', 'top', 'type'].includes(key)) continue; // For testing purposes
+                console.error(`Modifying ${key} onmouseenter: ${value}`);
+                this.element.style[key] = value;
+            }
+        })
+        this.element.addEventListener("mouseleave", () => {
+            for (const [key, value] of Object.entries(this.properties)) {
+                if (['x', 'y', 'left', 'top', 'type'].includes(key)) continue; // For testing purposes
+                console.error(`Modifying ${key} onmouseleave: ${value}`);
+                this.element.style[key] = value;
+            }
+        })
     }
 
     copy() {
@@ -55,9 +70,13 @@ class Component {
         return e;
     }
 
-    setProperty(name, value) {
+    setProperty(name, value, property) {
         if (name == 'itype') {
             this.element.setAttribute('type', value);
+        }
+        if (name.split("_")[0] == 'hover') {
+            this.onhover[property.indexName] = value;
+            return;
         }
         if (this.properties) {
             this.properties[name] = value;
@@ -274,9 +293,10 @@ class DropdownMenu extends Component {
 class Property {
     static id = 0;
     value = null;
-    constructor(name, itype, allowedComponents, action = () => { }) {
+    constructor(name, indexName, itype, allowedComponents, action = () => { }) {
         this.components = allowedComponents;
         this.name = name;
+        this.indexName = indexName;
         this.itype = itype;
         if (itype == 'button') {
             this.action = action;
@@ -284,6 +304,7 @@ class Property {
         this.id = ++Property.id;
     }
     isAllowed(componentName) {
+        console.log(componentName, this.name);
         return this.components.includes(componentName) || this.components.includes("*");
     }
     createElement() {
@@ -310,6 +331,7 @@ class Property {
             tmp.appendChild(lbl);
         }
         tmp.appendChild(input);
+        this.element = tmp;
         return tmp;
     }
     static getApplied(componentName) {
@@ -329,7 +351,7 @@ class Property {
 
 class Enum extends Property {
     constructor(name, options = [], allowedComponents = [], enumSelected = (element, name, inputElement) => { }) {
-        super(name, 'ENUM', allowedComponents);
+        super(name, 'enum', 'ENUM', allowedComponents);
         this.options = options;
         this.height = 10;
         this.onEnumSelected = enumSelected;
@@ -392,27 +414,33 @@ const registry = {
 var selectedElement = null;
 
 const properties = {
-    'name': new Property('Name', 'text', ['*']),
-    'color': new Property('Color', 'color', ['*']),
-    'background_color': new Property("Background", 'color', ['*']),
-    'textContent': new Property('Text', 'text', ['Text']),
-    'x': new Property('X', 'number', ['*']),
-    'y': new Property('Y', 'number', ['*']),
-    'width': new Property('Width', 'number', ['*']),
-    'height': new Property('Height', 'number', ['*']),
-    'progress': new Property('Progress', 'number', ['ProgressBar']),
-    'addDropdown': new Property('Add Option', 'button', ['DropdownMenu'], (event) => {
+    'name': new Property('Name', 'name', 'text', ['*']),
+    'color': new Property('Color', 'color', 'color', ['*']),
+    'background_color': new Property("Background", 'background-color', 'color', ['*']),
+    'textContent': new Property('Text', 'textContent', 'text', ['Text']),
+    'x': new Property('X', 'left', 'number', ['*']),
+    'y': new Property('Y', 'top', 'number', ['*']),
+    'width': new Property('Width', 'width', 'number', ['*']),
+    'height': new Property('Height', 'height', 'number', ['*']),
+    'progress': new Property('Progress', 'progress', 'number', ['ProgressBar']),
+    'addDropdown': new Property('Add Option', 'addDropdown', 'button', ['DropdownMenu'], (event) => {
         const component = selectedElement.comp;
         component.addDropdown();
     }),
-    'removeDropdown': new Property('Remove Option', 'button', ['DropdownMenu'], (event) => {
+    'removeDropdown': new Property('Remove Option', 'removeDropdown', 'button', ['DropdownMenu'], (event) => {
         const component = selectedElement.comp;
         component.removeDropdown();
     }),
-    'src_file': new Property("File", 'file', ['Img']),
-    'src_text': new Property("URL", 'text', ['Img']),
-    'alt': new Property("Alt Text", 'text', ['Img']),
-    'itype': new Enum('Input Type', ["text", "password", "email", "url", "tel", "number", "date", "time", "month", "week", "submit", "reset", "button", "color", "range", "checkbox", "radio", "file"], ['Input'])
+    'src_file': new Property("File", 'src', 'file', ['Img']),
+    'src_text': new Property("URL", 'src', 'text', ['Img']),
+    'alt': new Property("Alt Text", 'alt', 'text', ['Img']),
+    'itype': new Enum('Input Type', 'itype', ["text", "password", "email", "url", "tel", "number", "date", "time", "month", "week", "submit", "reset", "button", "color", "range", "checkbox", "radio", "file"], ['Input']),
+    'hover_color': new Property('Hover Color', 'color', 'color', ['*']),
+    'hover_bgcolor': new Property('Hover Background', 'background-color', 'color', ['*']),
+    'hover_x': new Property('Hover X', 'left', 'number', ['*']),
+    'hover_y': new Property('Hover Y', 'top', 'number', ['*']),
+    'hover_width': new Property('Hover Width', 'width', 'number', ['*']),
+    'hover_height': new Property('Hover Height', 'height', 'number', ['*']),
 }
 
 const dragdropComponents = []
@@ -695,15 +723,16 @@ propertyApply.addEventListener("click", () => {
         // console.log(displayedProperties.map(c => c.element));
         const c = selectedElement.comp;
         for (let p of displayedProperties) {
-            console.log('TYPE', p.type, p.element);
+            if (!p.property instanceof Property) continue;
             if (p.type == 'property') {
-                let v = p.element.value; // Type is input
+                console.log(p);
+                let v = p.property.element.querySelector("input").value;
                 // console.log(v);
                 if (`${v}`.length == 0 || v == null || v == undefined) {
-                    // console.log("Continue");
+                    console.log("Continue", p.name, `${v}`, p.property.element);
                     continue;
                 }
-                c.setProperty(p.name, v);
+                c.setProperty(p.name, v, p.property);
                 if (p.name == "textContent") {
                     selectedElement.element.textContent = v;
                     console.warn(`Setting ${p.name} to ${v}`);
