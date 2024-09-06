@@ -4,7 +4,6 @@ class Component {
         this.parent = parent;
         this.group = group;
         this.element = null;
-        this.onhover = {};
         this.onPropertyChange = (name, value) => {
             console.log(`====== Property Change ======\nName: ${name}\nValue: ${value}\n`);
         };
@@ -24,7 +23,25 @@ class Component {
             flex_direction: 'row',
             justify_content: "center",
             align_items: "center",
-            text_align: "center"
+            text_align: "center",
+
+            HOVERcolor: "#fff",
+            HOVERbackground: "#000",
+            HOVERwidth: "100px",
+            HOVERheight: "10px",
+            HOVERleft: "0",
+            HOVERtop: "0",
+            HOVERborder_radius: "0px",
+            HOVERborder_style: "none",
+            HOVERborder_color: "#fff",
+            HOVERborder_width: "0px",
+            HOVERdisplay: "block",
+            HOVERflex_direction: 'row',
+            HOVERjustify_content: "center",
+            HOVERalign_items: "center",
+            HOVERtext_align: "center"
+
+
         }
         this.preview = this.properties;
         this.children = [];
@@ -94,17 +111,10 @@ class Component {
     setProperty(name, value, property) {
         if (name == 'itype') {
             this.element.setAttribute('type', value);
-        }
-        if (name.split("_")[0] == 'hover') {
-            console.log(`${property.indexName} set on hover: ${value}`)
-            this.onhover[property.indexName] = value;
-            if (property.indexName == "background-color") {
-                this.update(value);
-            }
             return;
         }
         if (this.properties) {
-            this.properties[name] = value;
+            this.properties[property.indexName] = value;
             this.onPropertyChange(name, value, this.element);
             // console.log("Sending properties change: ");
             // console.log(JSON.stringify(this.properties));
@@ -393,7 +403,7 @@ var selectedElement = null;
 const properties = {
     'name': new Property('Name', 'name', 'text', ['*']),
     'color': new Property('Color', 'color', 'color', ['*']),
-    'background_color': new Property("Background", 'background-color', 'color', ['*']),
+    'background_color': new Property("Background", 'background', 'color', ['*']),
     'textContent': new Property('Text', 'textContent', 'text', ['Text']),
     'x': new Property('X', 'left', 'number', ['*']),
     'y': new Property('Y', 'top', 'number', ['*']),
@@ -412,12 +422,12 @@ const properties = {
     'src_text': new Property("URL", 'src', 'text', ['Img']),
     'alt': new Property("Alt Text", 'alt', 'text', ['Img']),
     'itype': new Enum('Input Type', 'itype', ["text", "password", "email", "url", "tel", "number", "date", "time", "month", "week", "submit", "reset", "button", "color", "range", "checkbox", "radio", "file"], ['Input']),
-    'hover_color': new Property('Hover Color', 'color', 'color', ['*']),
-    'hover_bgcolor': new Property('Hover Background', 'background-color', 'color', ['*']),
-    'hover_x': new Property('Hover X', 'left', 'number', ['*']),
-    'hover_y': new Property('Hover Y', 'top', 'number', ['*']),
-    'hover_width': new Property('Hover Width', 'width', 'number', ['*']),
-    'hover_height': new Property('Hover Height', 'height', 'number', ['*']),
+    'hover_color': new Property('Hover Color', 'HOVERcolor', 'color', ['*']),
+    'hover_bgcolor': new Property('Hover Background', 'HOVERbackground', 'color', ['*']),
+    'hover_x': new Property('Hover X', 'HOVERleft', 'number', ['*']),
+    'hover_y': new Property('Hover Y', 'HOVERtop', 'number', ['*']),
+    'hover_width': new Property('Hover Width', 'HOVERwidth', 'number', ['*']),
+    'hover_height': new Property('Hover Height', 'HOVERheight', 'number', ['*']),
 }
 
 const dragdropComponents = []
@@ -570,8 +580,8 @@ for (let component of library) {
             let c = component.copy();
 
             // Set size
-            tmp.style.width = c.size.width;
-            tmp.style.height = c.size.height;
+            tmp.style.width = c.properties.width;
+            tmp.style.height = c.properties.height;
             tmp.style.zIndex = null;
             c.setElement(tmp);
             if (c instanceof DropdownMenu) {
