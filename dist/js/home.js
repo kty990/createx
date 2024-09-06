@@ -4,19 +4,29 @@ class Component {
         this.parent = parent;
         this.group = group;
         this.element = null;
-        this.size = {
-            width: '100px',
-            height: '100px'
-        };
         this.onhover = {};
         this.onPropertyChange = (name, value) => {
             console.log(`====== Property Change ======\nName: ${name}\nValue: ${value}\n`);
         };
         this.onSetElement = onSetElement;
-        this.position = {
-            x: '0px',
-            y: '0px'
-        };
+        this.properties = {
+            color: "#fff",
+            background: "#000",
+            width: "100px",
+            height: "10px",
+            left: "0",
+            top: "0",
+            border_radius: "0px",
+            border_style: "none",
+            border_color: "#fff",
+            border_width: "0px",
+            display: "block",
+            flex_direction: 'row',
+            justify_content: "center",
+            align_items: "center",
+            text_align: "center"
+        }
+        this.preview = this.properties;
         this.children = [];
         if (this.parent) {
             this.parent.children.push(this);
@@ -102,8 +112,11 @@ class Component {
         }
     }
 
-    update(bg) {
-        this.background = bg;
+    update(properties = null) {
+        let p = properties || this.properties;
+        for (const [key, value] of Object.entries) {
+            this.element.style[key.replace("_", "-")] = value;
+        }
     }
 
     select() {
@@ -121,89 +134,46 @@ class Component {
 class Button extends Component {
     constructor(parent, group) {
         super("Button", parent, group);
-        this.preview = {
-            type: 'div',
-            width: '100px',
-            height: "100px",
-            border_radius: '10px',
-            background_color: 'var(--body)',
-        }
-        this.properties = this.preview;
+        // Set preview & properties
     }
 }
 
 class Text extends Component {
     constructor(parent, group) {
         super("Text", parent, group);
-        this.preview = {
-            type: 'p',
-            width: '100px',
-            height: "100px",
-            left: "12.5%",
-            top: "30%",
-            color: 'var(--text-hover)',
-            text_content: 'TEXT HERE',
-            text_shadow: '#000 1px 5px 10px'
-        }
-        this.properties = this.preview;
+        // Set preview & properties
     }
 }
 
 class Img extends Component {
     constructor(parent, group) {
         super("Image", parent, group);
-        this.preview = {
-            type: 'img',
-            src: '',
-            alt: 'image',
-            width: '100px',
-            height: "100px",
-            left: "12.5%",
-            top: "30%",
-            color: 'var(--text-hover)',
-            text_shadow: '#000 1px 5px 10px'
-        }
-        this.properties = this.preview;
         this.setOnPropertyChange((name, value, element) => {
             console.log(`====== Property Change ======\nName: ${name}\nValue: ${value}\n`);
             if (name == 'src') element.src = value;
             if (name == 'alt') element.alt = value;
         })
+        // Set preview & properties
     }
 }
 
 class Input extends Component {
     constructor(parent, group) {
         super("Input", parent, group);
-        this.preview = {
-            type: 'input',
-            width: '100px',
-            height: "10px",
-            left: "12.5%",
-            top: "30%",
-            color: 'var(--text)'
-        }
-        this.properties = this.preview;
         this.setOnPropertyChange((name, value, element) => {
             console.log(`====== Property Change ======\nName: ${name}\nValue: ${value}\n`);
             if (name == 'value') element.value = value;
             if (name == 'placeholder') element.placeholder = value;
         })
+        // Set preview & properties
     }
 }
 
+// REDONE
 class ProgressBar extends Component {
     constructor(parent, group) {
         super("Progress Bar", parent, group);
-        this.background = "#7d7d7d"
-        this.preview = {
-            type: 'div',
-            width: '100px',
-            height: "10px",
-            border_radius: '1px',
-            background: `linear-gradient(90deg,${this.background},${this.background})`,
-        }
-        this.properties = this.preview;
+        this.background = "#7d7d7d";
         let p = [];
         for (let i = 0; i < 101; i++) {
             if (i <= 60) {
@@ -212,25 +182,20 @@ class ProgressBar extends Component {
                 p.push(this.background);
             }
         }
-        this.preview.background = `linear-gradient(90deg, ${p.join(",")})`;
+        this.properties.background = `linear-gradient(90deg, ${p.join(",")})`;
         this.progress = 60;
     }
     setProgress(progress) {
         let p = [];
         for (let i = 0; i < 101; i++) {
             if (i <= progress) {
-                p.push(this.element.style.color || "#0f0");
+                p.push(this.properties.color || "#0f0");
             } else {
                 p.push(this.background);
             }
         }
         this.progress = progress;
-        this.element.style.background = `linear-gradient(90deg, ${p.join(",")})`;
-    }
-
-    update(bg) {
-        this.background = bg;
-        this.setProgress(this.progress);
+        this.properties.background = `linear-gradient(90deg, ${p.join(",")})`;
     }
 }
 
@@ -242,19 +207,7 @@ class DropdownMenu extends Component {
         super("Dropdown Menu", parent, group);
         this.dropdowns = 0;
         this.selections = dropdownSelections;
-        this.preview = {
-            type: 'p',
-            text_content: 'TITLE',
-            width: '100px',
-            height: "10px",
-            text_align: 'center',
-            border_radius: '1px',
-            background_color: 'var(--interaction)',
-            border_color: 'var(--interaction)',
-            border_style: 'solid',
-            border_width: '1px'
-        }
-        this.properties = this.preview;
+
     }
 
     setElement(element) {
