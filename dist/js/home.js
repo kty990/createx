@@ -38,16 +38,27 @@ class Component {
         console.log("Create component", this.name);
         this.element.addEventListener("mouseenter", () => {
             for (const [key, value] of Object.entries(this.onhover)) {
-                if (['x', 'y', 'left', 'top', 'type'].includes(key)) continue; // For testing purposes
-                console.error(`Modifying ${key} onmouseenter: ${value}`);
+                if (['x', 'y', 'left', 'top', 'type'].includes(key)) continue; // This will change when the project is saved/built
                 this.element.style[key] = value;
+                if (key.toLowerCase().indexOf('background') != -1) {
+                    console.log(`Updating bg to ${value} from ${key}`);
+                    this.update(value);
+                }
+            }
+            if (this instanceof ProgressBar) {
+                this.setProgress(this.progress);
             }
         })
         this.element.addEventListener("mouseleave", () => {
             for (const [key, value] of Object.entries(this.properties)) {
-                if (['x', 'y', 'left', 'top', 'type'].includes(key)) continue; // For testing purposes
-                console.error(`Modifying ${key} onmouseleave: ${value}`);
+                if (['x', 'y', 'left', 'top', 'type'].includes(key)) continue; // This will change when the project is saved/built
                 this.element.style[key] = value;
+                if (key == 'backgroundColor' || key == 'background_color') {
+                    this.update(value);
+                }
+            }
+            if (this instanceof ProgressBar) {
+                this.setProgress(this.progress);
             }
         })
     }
@@ -75,7 +86,11 @@ class Component {
             this.element.setAttribute('type', value);
         }
         if (name.split("_")[0] == 'hover') {
+            console.log(`${property.indexName} set on hover: ${value}`)
             this.onhover[property.indexName] = value;
+            if (property.indexName == "background-color") {
+                this.update(value);
+            }
             return;
         }
         if (this.properties) {
@@ -85,6 +100,10 @@ class Component {
             // console.log(JSON.stringify(this.properties));
             window.api.send("editComponent", this.name, JSON.stringify(this.properties));
         }
+    }
+
+    update(bg) {
+        this.background = bg;
     }
 
     select() {
@@ -207,6 +226,11 @@ class ProgressBar extends Component {
         }
         this.progress = progress;
         this.element.style.background = `linear-gradient(90deg, ${p.join(",")})`;
+    }
+
+    update(bg) {
+        this.background = bg;
+        this.setProgress(this.progress);
     }
 }
 
