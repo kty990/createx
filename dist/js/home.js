@@ -64,9 +64,10 @@ class Component {
         window.api.send("createComponent", properties);
         console.log("Create component", this.name);
         this.element.addEventListener("mouseenter", () => {
-            for (const [key, value] of Object.entries(this.onhover)) {
+            for (const [key, value] of Object.entries(this.properties)) {
                 if (['x', 'y', 'left', 'top', 'type'].includes(key)) continue; // This will change when the project is saved/built
-                this.element.style[key] = value;
+                if (key.indexOf("HOVER") == -1) continue;
+                this.element.style[key.replace("HOVER", "")] = value;
                 if (key.toLowerCase().indexOf('background') != -1) {
                     console.log(`Updating bg to ${value} from ${key}`);
                     this.update(value);
@@ -115,6 +116,9 @@ class Component {
         }
         if (this.properties) {
             this.properties[property.indexName] = value;
+            if (property.indexName.indexOf("HOVER") == -1) {
+                this.element.style[property.indexName] = value;
+            }
             this.onPropertyChange(name, value, this.element);
             // console.log("Sending properties change: ");
             // console.log(JSON.stringify(this.properties));
@@ -144,14 +148,12 @@ class Component {
 class Button extends Component {
     constructor(parent, group) {
         super("Button", parent, group);
-        // Set preview & properties
     }
 }
 
 class Text extends Component {
     constructor(parent, group) {
         super("Text", parent, group);
-        // Set preview & properties
     }
 }
 
@@ -163,7 +165,6 @@ class Img extends Component {
             if (name == 'src') element.src = value;
             if (name == 'alt') element.alt = value;
         })
-        // Set preview & properties
     }
 }
 
@@ -175,7 +176,6 @@ class Input extends Component {
             if (name == 'value') element.value = value;
             if (name == 'placeholder') element.placeholder = value;
         })
-        // Set preview & properties
     }
 }
 
@@ -253,7 +253,7 @@ class DropdownMenu extends Component {
                 this.visible = (this.visible == 'visible') ? 'hidden' : 'visible';
             }
             this.element.querySelector("div").style.visibility = this.visible;
-            this.element.style.height = (this.visible) ? 'fit-content' : `${this.properties.height || 10}px`;
+            this.setProperty('height', (this.visible) ? 'fit-content' : `${this.properties.height || 10}px`);
         })
     }
 
@@ -610,22 +610,22 @@ for (let component of library) {
                                 property.querySelector("input").value = hex;
                                 break;
                             case 'backgroundColor':
-                                property.querySelector("input").value = c.element.style.backgroundColor || c.element.style.background || "#f00";
+                                property.querySelector("input").value = c.properties.backgroundColor || c.element.style.background || "#f00";
                                 break;
                             case 'textContent':
                                 property.querySelector('input').placeholder = c.element.textContent;
                                 break;
                             case 'x':
-                                property.querySelector("input").placeholder = parseInt(c.element.style.left.replace('px', ''));
+                                property.querySelector("input").placeholder = parseInt(c.properties.left.replace('px', ''));
                                 break;
                             case 'y':
-                                property.querySelector("input").placeholder = parseInt(c.element.style.top.replace('px', ''));
+                                property.querySelector("input").placeholder = parseInt(c.properties.top.replace('px', ''));
                                 break;
                             case 'width':
-                                property.querySelector("input").placeholder = parseInt(c.element.style.width.replace('px', ''));
+                                property.querySelector("input").placeholder = parseInt(c.properties.width.replace('px', ''));
                                 break;
                             case 'height':
-                                property.querySelector("input").placeholder = parseInt(c.element.style.height.replace('px', ''));
+                                property.querySelector("input").placeholder = parseInt(c.properties.height.replace('px', ''));
                             case 'progress':
                                 property.querySelector("input").placeholder = selectedElement.comp.progress;
                                 break;
