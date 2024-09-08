@@ -2,6 +2,7 @@ const { app, BrowserWindow, Menu, dialog, ipcMain, autoUpdater, shell } = requir
 const path = require('path');
 const fs = require('fs');
 const util = require('util');
+const builder = require("./build");
 
 var licenseData;
 var currentFile;
@@ -71,20 +72,8 @@ class GraphicsWindow {
 
 const graphicsWindow = new GraphicsWindow();
 
-const components = [
-    // {
-    //     name: "",
-    //     type: "",
-    //     left:0,
-    //     top:0,
-    //     width:0,
-    //     height:0,
-    //     properties:{}
-    // }
-]
-const files = [
-
-];
+const components = []
+const files = [];
 
 class File {
     constructor(name = null) {
@@ -101,7 +90,6 @@ class File {
 }
 
 
-// This has to be updated for .amk format
 async function exportProject() {
     // Get export destination
     const now = new Date();
@@ -201,7 +189,7 @@ async function exportProject() {
 }
 
 /**
- * @returns {{result: Boolean, value: String, license: String}}
+ * @returns {Promise<{result: Boolean, value: String, license: String}>}
  */
 async function openProject() {
     function binaryToString(binaryString) {
@@ -211,21 +199,23 @@ async function openProject() {
         // Join characters into a string
         return asciiChars.join('');
     }
-    let { filePaths, canceled } = await dialog.showOpenDialog({
-        defaultPath: ``,
-        filters: [
-            { name: 'CreatEx Files', extensions: ['amk'] }
-        ],
-        buttonLabel: "Open Project"
-    });
-    if (canceled) return;
-    const data = await util.promisify(fs.readFile)(filePaths[0]);
-    let tmp_v = binaryToString(data.toString());
-    let v = tmp_v.split("(LICENSE): ")[0];
-    let license = tmp_v.split("(LICENSE): ")[1];
-    console.log('v', v);
-    console.log('license', license);
-    return { result: data instanceof Buffer, value: v, license }
+    return new Promise(async (resolve) => {
+        let { filePaths, canceled } = await dialog.showOpenDialog({
+            defaultPath: ``,
+            filters: [
+                { name: 'CreatEx Files', extensions: ['amk'] }
+            ],
+            buttonLabel: "Open Project"
+        });
+        if (canceled) resolve({ result: false, value: 'Cancelled', license });
+        const data = await util.promisify(fs.readFile)(filePaths[0]);
+        let tmp_v = binaryToString(data.toString());
+        let v = tmp_v.split("(LICENSE): ")[0];
+        let license = tmp_v.split("(LICENSE): ")[1];
+        console.log('v', v);
+        console.log('license', license);
+        resolve({ result: data instanceof Buffer, value: v, license })
+    })
 }
 
 
@@ -315,6 +305,10 @@ ipcMain.on("openFile", async () => {
     console.log(result.value);
     console.log("\n\nEND OF OPEN\n\n")
     graphicsWindow.window.webContents.send("openFile", result);
+})
+
+ipcMain.on("buildFile", () => {
+    builder.build();
 })
 
 ipcMain.on("executeDropdown", (event, id) => {

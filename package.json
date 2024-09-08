@@ -37,6 +37,7 @@
     "node-imap": "^0.9.6"
   },
   "devDependencies": {
-    "electron": "^25.9.8"
+    "electron": "^25.9.8",
+    "electron-packager": "^17.1.2"
   }
 }
