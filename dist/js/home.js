@@ -797,20 +797,3 @@ dragdrop.addEventListener("click", (e) => {
         removeAll();
     }
 })
-
-
-
-
-
-
-let { id, root } = heirarcy.generateRoot('Test');
-heirarchyWindow.appendChild(root.element);
-root.addNest(1, '1');
-root.addNest(2, '2');
-root.addNest(3, '3');
-root.addNest(1, '1');
-root.addNest(1, '1');
-root.addNest(2, '2');
-heirarchyWindow.appendChild(root.element.cloneNode(true));
-
-root.refresh();

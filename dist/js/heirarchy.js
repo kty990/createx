@@ -1,5 +1,19 @@
 var root_count = 0;
 
+class hNest {
+    constructor(parent, nestLevel, id, displayValue) {
+        displayValue = `<span id='indent' style='margin-left: ${((nestLevel - 1) * 10) + 5}px;margin-right: 5px;'>⇁</span>${displayValue}`
+        this.parent = parent;
+        this.id = id;
+        this.displayValue = displayValue;
+        let nest = document.createElement("div");
+        nest.classList.add("h-nest");
+        nest.id = `${nestLevel}`;
+        nest.innerHTML = displayValue;
+        this.element = nest;
+    }
+}
+
 /**
  * Needs to be modified.
  * refresh method needs to properly display the parent-child relationship
@@ -14,27 +28,29 @@ class hRoot {
         this.displayValue = displayValue;
     }
 
-    addNest(nestLevel, displayValue) {
-        let nest = document.createElement("div");
-        nest.classList.add("h-nest");
-        nest.id = `${nestLevel}`;
-        nest.innerHTML = `<span id='indent' style='margin-left: ${((nestLevel - 1) * 10) + 5}px;margin-right: 5px;'>⇁</span>${displayValue}`;
-        this.element.appendChild(nest);
+    addNest(p, nestLevel, displayValue) {
+        let parent = p;
+        if (p.nest) {
+            parent = p.nest;
+        }
+        let n = new hNest(parent, nestLevel, `${nestLevel}`, `${nestLevel}`, displayValue);
         if (this.nests[`${nestLevel}`] != undefined && this.nests[`${nestLevel}`] != null) {
-            this.nests[`${nestLevel}`].push(nest);
+            this.nests[`${nestLevel}`].push(n);
         } else {
             this.nests[`${nestLevel}`] = [];
-            this.nests[`${nestLevel}`].push(nest);
+            this.nests[`${nestLevel}`].push(n);
             this.nestLevels.push(`${nestLevel}`);
         }
-        return { id: nestLevel, nest } // replace when logic implemented
+        return { id: nestLevel, nest: n } // replace when logic implemented
     }
 
-    refresh() {
+    refresh() { // parent element = parent.element
         this.element.innerHTML = `${this.displayValue}`;
         for (let level of this.nestLevels) {
+            console.log(this.nests[level]);
             for (let e of this.nests[level]) {
-                this.element.appendChild(e);
+                console.log(e);
+                e.parent.element.appendChild(e.element);
             }
         }
     }
@@ -49,3 +65,19 @@ function generateRoot(displayValue) {
 }
 
 export { root_count, generateRoot }
+
+/**
+ * EXAMPLE:
+ * 
+let { id, root } = heirarcy.generateRoot('Test');
+heirarchyWindow.appendChild(root.element);
+let n1 = root.addNest(root, 1, '1');
+let n2 = root.addNest(n1.nest, 2, '2');
+let n3 = root.addNest(n1.nest, 3, '3');
+let n4 = root.addNest(n2.nest, 1, '1');
+let n5 = root.addNest(n2.nest, 1, '1');
+let n6 = root.addNest(n2.nest, 2, '2');
+heirarchyWindow.appendChild(root.element.cloneNode(true));
+
+root.refresh();
+ */
