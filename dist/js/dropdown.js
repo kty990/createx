@@ -12,18 +12,8 @@ function refreshAll() {
     Plabel.querySelector("p").textContent = "Properties";
     document.getElementById("comp-type").style.visibility = 'visible';
 
-    dragdrop.innerHTML = `<div id="heirarchy-edit" class="heirarchy-edit">
-            <span id="label">
-                <p>Heirarchy</p>
-            </span>
-            <div id="background"></div>
-        </div>`
-    codeEditor.innerHTML = `<div id="heirarchy-edit" class="heirarchy-edit">
-            <span id="label">
-                <p>Heirarchy</p>
-            </span>
-            <div id="background"></div>
-        </div>`; // Reset code editor
+    dragdrop.innerHTML = ``;
+    codeEditor.innerHTML = ``; // Reset code editor
 }
 
 /*** FILE ***/

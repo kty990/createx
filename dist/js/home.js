@@ -1,3 +1,5 @@
+import * as heirarcy from './heirarchy.js';
+
 class Component {
     constructor(name, parent, group = null, onSetElement = () => { }) {
         this.name = name;
@@ -446,6 +448,8 @@ const Plabel = propertyElement.querySelector("#label");
 const compType = document.getElementById("comp-type").querySelector("p");
 const propertyApply = propertyElement.querySelector("#apply");
 
+const heirarchyWindow = document.getElementById("heirarchy-edit");
+
 // Tabs
 const editor = document.getElementById("tabs").querySelector("#editor-tab").querySelector('p'); // v editor
 const code = document.getElementById("tabs").querySelector("#code").querySelector('p'); // code editor
@@ -793,3 +797,20 @@ dragdrop.addEventListener("click", (e) => {
         removeAll();
     }
 })
+
+
+
+
+
+
+let { id, root } = heirarcy.generateRoot('Test');
+heirarchyWindow.appendChild(root.element);
+root.addNest(1, '1');
+root.addNest(2, '2');
+root.addNest(3, '3');
+root.addNest(1, '1');
+root.addNest(1, '1');
+root.addNest(2, '2');
+heirarchyWindow.appendChild(root.element.cloneNode(true));
+
+root.refresh();
