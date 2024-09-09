@@ -95,12 +95,7 @@ class Component {
             for (const [key, value] of Object.entries(this.properties)) {
                 if (['x', 'y', 'left', 'top', 'type'].includes(key)) continue; // This will change when the project is saved/built
                 if (key.indexOf("HOVER") == -1) continue;
-                this.element.style.setProperty(key, value);
-                this.element.style[key.replace("HOVER", "")] = value;
-                if (key.toLowerCase().indexOf('background') != -1) {
-                    console.log(`Updating bg to ${value} from ${key}`);
-                    this.update(value);
-                }
+                this.element.style.setProperty(key.replace("HOVER", ""), value);
             }
             if (this instanceof ProgressBar) {
                 this.setProgress(this.progress);
@@ -109,7 +104,8 @@ class Component {
         this.element.addEventListener("mouseleave", () => {
             for (const [key, value] of Object.entries(this.properties)) {
                 if (['x', 'y', 'left', 'top', 'type'].includes(key)) continue; // This will change when the project is saved/built
-                this.element.style[key] = value;
+                if (key.indexOf("HOVER") != -1) continue;
+                this.element.style.setProperty(key, value);
                 if (key == 'backgroundColor' || key == 'background_color') {
                     this.update(value);
                 }
@@ -548,7 +544,7 @@ for (let component of library) {
             e.style.height = '15px';
             e.style.width = (Array.from(Object.keys(preview)).includes('text_content')) ? 'auto' : '15px';
         } else if (key != 'type' && key != 'text_content') {
-            e.style[key.replace("_", "-")] = value;
+            e.style.setProperty(key.replace("_", "-"), value);
         } else if (key == 'text_content') {
             e.textContent = value;
         }
@@ -783,7 +779,7 @@ propertyApply.addEventListener("click", () => {
                         selectedElement.comp.background = v;
                         selectedElement.comp.setProgress(selectedElement.comp.progress);
                     } else {
-                        selectedElement.element.style[p.name] = `${v}${(p.name == 'width' || p.name == 'height') ? 'px' : ''}`;
+                        selectedElement.element.style.setProperty(p.name, `${v}${(p.name == 'width' || p.name == 'height') ? 'px' : ''}`);
                     }
                 }
                 switch (p.name) {
