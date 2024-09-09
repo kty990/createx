@@ -1,7 +1,23 @@
 import * as heirarcy from './heirarchy.js';
 
+class Group {
+    static groups = 0;
+    constructor() {
+        this.name = `Group ${++Group.groups}`;
+        this.components = [];
+        this.root = heirarcy.generateRoot(this.name);
+    }
+
+    addComponent(component) {
+        this.components.push(component);
+        // Update visuals for heirarchy
+        this.root.addNest(this.root.root, 1, component.name);
+        this.root.root.refresh();
+    }
+}
+
 class Component {
-    constructor(name, parent, group = null, onSetElement = () => { }) {
+    constructor(name, parent, onSetElement = () => { }, group = new Group()) {
         this.name = name;
         this.parent = parent;
         this.group = group;
@@ -50,6 +66,10 @@ class Component {
         if (this.parent) {
             this.parent.children.push(this);
         }
+    }
+
+    setGroup(g) {
+        this.group = g;
     }
 
     setOnPropertyChange(func) {
@@ -162,21 +182,21 @@ class Component {
 }
 
 class Button extends Component {
-    constructor(parent, group) {
+    constructor(parent, group = undefined) {
         super("Button", parent, group);
         this.preview.type = 'div';
     }
 }
 
 class Text extends Component {
-    constructor(parent, group) {
+    constructor(parent, group = undefined) {
         super("Text", parent, group);
         this.preview.type = 'p';
     }
 }
 
 class Img extends Component {
-    constructor(parent, group) {
+    constructor(parent, group = undefined) {
         super("Image", parent, group);
         this.preview.type = 'img';
         this.setOnPropertyChange((name, value, element) => {
@@ -188,7 +208,7 @@ class Img extends Component {
 }
 
 class Input extends Component {
-    constructor(parent, group) {
+    constructor(parent, group = undefined) {
         super("Input", parent, group);
         this.preview.type = 'input';
         this.setOnPropertyChange((name, value, element) => {
@@ -201,7 +221,7 @@ class Input extends Component {
 
 // REDONE
 class ProgressBar extends Component {
-    constructor(parent, group) {
+    constructor(parent, group = undefined) {
         super("Progress Bar", parent, group);
         this.background = "#7d7d7d";
         this.preview.type = 'div';
@@ -234,7 +254,7 @@ class DropdownMenu extends Component {
     static mains = {};
     static id = 0;
 
-    constructor(parent, dropdownSelections, group) {
+    constructor(parent, dropdownSelections, group = undefined) {
         super("Dropdown Menu", parent, group);
         this.preview.type = 'div';
         this.dropdowns = 0;
