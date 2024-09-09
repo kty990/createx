@@ -15,8 +15,8 @@ class Component {
             background: "#000",
             width: "100px",
             height: "10px",
-            left: "0",
-            top: "0",
+            left: "100px",
+            top: "100px",
             border_radius: "0px",
             border_style: "none",
             border_color: "#fff",
@@ -31,8 +31,8 @@ class Component {
             HOVERbackground: "#000",
             HOVERwidth: "100px",
             HOVERheight: "10px",
-            HOVERleft: "0",
-            HOVERtop: "0",
+            HOVERleft: "100px",
+            HOVERtop: "100px",
             HOVERborder_radius: "0px",
             HOVERborder_style: "none",
             HOVERborder_color: "#fff",
@@ -57,8 +57,14 @@ class Component {
     }
 
     setElement(e) {
+        console.warn('Setting element:', e);
         this.element = e;
-        this.element.style.overflow = 'hidden';
+        // this.setProperty('position', 'absolute', null);
+        this.setProperty('overflow', 'hidden', null);
+        for (const [key, value] of Object.entries(this.element.style)) {
+            this.properties[`${key}`] = value;
+            this.properties[`HOVER${key}`] = value;
+        }
         console.log(e);
         this.onSetElement(e);
         let properties = this.properties;
@@ -117,9 +123,16 @@ class Component {
             return;
         }
         if (this.properties) {
-            this.properties[property.indexName] = value;
-            if (property.indexName.indexOf("HOVER") == -1) {
-                this.element.style[property.indexName] = value;
+            if (!property) {
+                this.properties[name] = value;
+                if (name.indexOf("HOVER") == -1) {
+                    this.element.style[name] = value;
+                }
+            } else {
+                this.properties[property.indexName] = value;
+                if (property.indexName.indexOf("HOVER") == -1) {
+                    this.element.style[property.indexName] = value;
+                }
             }
             this.onPropertyChange(name, value, this.element);
             // console.log("Sending properties change: ");
@@ -130,8 +143,8 @@ class Component {
 
     update(properties = null) {
         let p = properties || this.properties;
-        for (const [key, value] of Object.entries) {
-            this.element.style[key.replace("_", "-")] = value;
+        for (const [key, value] of Object.entries(p)) {
+            this.element.style.setProperty(key.replace("_", "-"), value);
         }
     }
 
@@ -150,18 +163,21 @@ class Component {
 class Button extends Component {
     constructor(parent, group) {
         super("Button", parent, group);
+        this.preview.type = 'div';
     }
 }
 
 class Text extends Component {
     constructor(parent, group) {
         super("Text", parent, group);
+        this.preview.type = 'p';
     }
 }
 
 class Img extends Component {
     constructor(parent, group) {
         super("Image", parent, group);
+        this.preview.type = 'img';
         this.setOnPropertyChange((name, value, element) => {
             console.log(`====== Property Change ======\nName: ${name}\nValue: ${value}\n`);
             if (name == 'src') element.src = value;
@@ -173,6 +189,7 @@ class Img extends Component {
 class Input extends Component {
     constructor(parent, group) {
         super("Input", parent, group);
+        this.preview.type = 'input';
         this.setOnPropertyChange((name, value, element) => {
             console.log(`====== Property Change ======\nName: ${name}\nValue: ${value}\n`);
             if (name == 'value') element.value = value;
@@ -186,6 +203,7 @@ class ProgressBar extends Component {
     constructor(parent, group) {
         super("Progress Bar", parent, group);
         this.background = "#7d7d7d";
+        this.preview.type = 'div';
         let p = [];
         for (let i = 0; i < 101; i++) {
             if (i <= 60) {
@@ -217,6 +235,7 @@ class DropdownMenu extends Component {
 
     constructor(parent, dropdownSelections, group) {
         super("Dropdown Menu", parent, group);
+        this.preview.type = 'div';
         this.dropdowns = 0;
         this.selections = dropdownSelections;
 
