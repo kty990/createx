@@ -207,7 +207,10 @@ async function openProject() {
             ],
             buttonLabel: "Open Project"
         });
-        if (canceled) resolve({ result: false, value: 'Cancelled', license });
+        if (canceled) {
+            resolve({ result: false, value: 'Cancelled', license: licenseData });
+            return;
+        };
         const data = await util.promisify(fs.readFile)(filePaths[0]);
         let tmp_v = binaryToString(data.toString());
         let v = tmp_v.split("(LICENSE): ")[0];
