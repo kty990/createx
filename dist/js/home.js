@@ -95,6 +95,7 @@ class Component {
             for (const [key, value] of Object.entries(this.properties)) {
                 if (['x', 'y', 'left', 'top', 'type'].includes(key)) continue; // This will change when the project is saved/built
                 if (key.indexOf("HOVER") == -1) continue;
+                this.element.style.setProperty(key, value);
                 this.element.style[key.replace("HOVER", "")] = value;
                 if (key.toLowerCase().indexOf('background') != -1) {
                     console.log(`Updating bg to ${value} from ${key}`);
@@ -146,12 +147,12 @@ class Component {
             if (!property) {
                 this.properties[name] = value;
                 if (name.indexOf("HOVER") == -1) {
-                    this.element.style[name] = value;
+                    this.element.style.setProperty(name, value);
                 }
             } else {
                 this.properties[property.indexName] = value;
                 if (property.indexName.indexOf("HOVER") == -1) {
-                    this.element.style[property.indexName] = value;
+                    this.element.style.setProperty(property.indexName, value);
                 }
             }
             this.onPropertyChange(name, value, this.element);
@@ -182,22 +183,22 @@ class Component {
 }
 
 class Button extends Component {
-    constructor(parent, group = undefined) {
-        super("Button", parent, group);
+    constructor(parent) {
+        super("Button", parent);
         this.preview.type = 'div';
     }
 }
 
 class Text extends Component {
-    constructor(parent, group = undefined) {
-        super("Text", parent, group);
+    constructor(parent) {
+        super("Text", parent);
         this.preview.type = 'p';
     }
 }
 
 class Img extends Component {
-    constructor(parent, group = undefined) {
-        super("Image", parent, group);
+    constructor(parent) {
+        super("Image", parent);
         this.preview.type = 'img';
         this.setOnPropertyChange((name, value, element) => {
             console.log(`====== Property Change ======\nName: ${name}\nValue: ${value}\n`);
@@ -208,8 +209,8 @@ class Img extends Component {
 }
 
 class Input extends Component {
-    constructor(parent, group = undefined) {
-        super("Input", parent, group);
+    constructor(parent) {
+        super("Input", parent);
         this.preview.type = 'input';
         this.setOnPropertyChange((name, value, element) => {
             console.log(`====== Property Change ======\nName: ${name}\nValue: ${value}\n`);
@@ -221,8 +222,8 @@ class Input extends Component {
 
 // REDONE
 class ProgressBar extends Component {
-    constructor(parent, group = undefined) {
-        super("Progress Bar", parent, group);
+    constructor(parent) {
+        super("Progress Bar", parent);
         this.background = "#7d7d7d";
         this.preview.type = 'div';
         let p = [];
@@ -254,8 +255,8 @@ class DropdownMenu extends Component {
     static mains = {};
     static id = 0;
 
-    constructor(parent, dropdownSelections, group = undefined) {
-        super("Dropdown Menu", parent, group);
+    constructor(parent, dropdownSelections) {
+        super("Dropdown Menu", parent);
         this.preview.type = 'div';
         this.dropdowns = 0;
         this.selections = dropdownSelections;
@@ -526,12 +527,12 @@ function rgbToHex(r, g, b) {
 }
 
 const library = [
-    new Button(null, null),
-    new Text(null, null),
-    new ProgressBar(null, null),
-    new DropdownMenu(null, null, null),
-    new Img(null, null),
-    new Input(null, null)
+    new Button(null),
+    new Text(null),
+    new ProgressBar(null),
+    new DropdownMenu(null, null),
+    new Img(null),
+    new Input(null)
 ]
 
 
