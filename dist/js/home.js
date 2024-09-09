@@ -1,11 +1,34 @@
 import * as heirarcy from './heirarchy.js';
 
+const dragdropComponents = []
+let displayedProperties = [];
+
+/* HTML Content Editting & Logic */
+
+const propertyElement = document.getElementById("properties");
+const directory = document.getElementById("directory");
+const lib = document.getElementById("componentlibrary");
+const dragdrop = document.getElementById("drag-drop");
+const codeEditor = document.getElementById("editor");
+
+const Plabel = propertyElement.querySelector("#label");
+
+const compType = document.getElementById("comp-type").querySelector("p");
+const propertyApply = propertyElement.querySelector("#apply");
+
+const heirarchyWindow = document.getElementById("heirarchy-edit");
+
+// Tabs
+const editor = document.getElementById("tabs").querySelector("#editor-tab").querySelector('p'); // v editor
+const code = document.getElementById("tabs").querySelector("#code").querySelector('p'); // code editor
+
 class Group {
     static groups = 0;
     constructor() {
         this.name = `Group ${++Group.groups}`;
         this.components = [];
         this.root = heirarcy.generateRoot(this.name);
+        heirarchyWindow.appendChild(this.root.root.element);
     }
 
     addComponent(component) {
@@ -17,10 +40,12 @@ class Group {
 }
 
 class Component {
-    constructor(name, parent, onSetElement = () => { }, group = new Group()) {
+    constructor(name, parent, group = undefined, onSetElement = () => { }) {
         this.name = name;
         this.parent = parent;
-        this.group = group;
+        if (group != undefined && group != null) {
+            this.group = group;
+        }
         this.element = null;
         this.onPropertyChange = (name, value) => {
             console.log(`====== Property Change ======\nName: ${name}\nValue: ${value}\n`);
@@ -105,9 +130,10 @@ class Component {
             for (const [key, value] of Object.entries(this.properties)) {
                 if (['x', 'y', 'left', 'top', 'type'].includes(key)) continue; // This will change when the project is saved/built
                 if (key.indexOf("HOVER") != -1) continue;
-                this.element.style.setProperty(key, value);
                 if (key == 'backgroundColor' || key == 'background_color') {
-                    this.update(value);
+                    this.element.style.setProperty('background', value);
+                } else {
+                    this.element.style.setProperty(key, value);
                 }
             }
             if (this instanceof ProgressBar) {
@@ -179,22 +205,22 @@ class Component {
 }
 
 class Button extends Component {
-    constructor(parent) {
-        super("Button", parent);
+    constructor(parent, group = undefined) {
+        super("Button", parent, group);
         this.preview.type = 'div';
     }
 }
 
 class Text extends Component {
-    constructor(parent) {
-        super("Text", parent);
+    constructor(parent, group = undefined) {
+        super("Text", parent, group);
         this.preview.type = 'p';
     }
 }
 
 class Img extends Component {
-    constructor(parent) {
-        super("Image", parent);
+    constructor(parent, group = undefined) {
+        super("Image", parent, group);
         this.preview.type = 'img';
         this.setOnPropertyChange((name, value, element) => {
             console.log(`====== Property Change ======\nName: ${name}\nValue: ${value}\n`);
@@ -205,8 +231,8 @@ class Img extends Component {
 }
 
 class Input extends Component {
-    constructor(parent) {
-        super("Input", parent);
+    constructor(parent, group = undefined) {
+        super("Input", parent, group);
         this.preview.type = 'input';
         this.setOnPropertyChange((name, value, element) => {
             console.log(`====== Property Change ======\nName: ${name}\nValue: ${value}\n`);
@@ -218,8 +244,8 @@ class Input extends Component {
 
 // REDONE
 class ProgressBar extends Component {
-    constructor(parent) {
-        super("Progress Bar", parent);
+    constructor(parent, group = undefined) {
+        super("Progress Bar", parent, group);
         this.background = "#7d7d7d";
         this.preview.type = 'div';
         let p = [];
@@ -251,8 +277,8 @@ class DropdownMenu extends Component {
     static mains = {};
     static id = 0;
 
-    constructor(parent, dropdownSelections) {
-        super("Dropdown Menu", parent);
+    constructor(parent, dropdownSelections, group = undefined) {
+        super("Dropdown Menu", parent, group);
         this.preview.type = 'div';
         this.dropdowns = 0;
         this.selections = dropdownSelections;
@@ -469,28 +495,6 @@ const properties = {
     'hover_height': new Property('Hover Height', 'HOVERheight', 'number', ['*']),
 }
 
-const dragdropComponents = []
-let displayedProperties = [];
-
-/* HTML Content Editting & Logic */
-
-const propertyElement = document.getElementById("properties");
-const directory = document.getElementById("directory");
-const lib = document.getElementById("componentlibrary");
-const dragdrop = document.getElementById("drag-drop");
-const codeEditor = document.getElementById("editor");
-
-const Plabel = propertyElement.querySelector("#label");
-
-const compType = document.getElementById("comp-type").querySelector("p");
-const propertyApply = propertyElement.querySelector("#apply");
-
-const heirarchyWindow = document.getElementById("heirarchy-edit");
-
-// Tabs
-const editor = document.getElementById("tabs").querySelector("#editor-tab").querySelector('p'); // v editor
-const code = document.getElementById("tabs").querySelector("#code").querySelector('p'); // code editor
-
 function removeAll() {
     directory.innerHTML = "";
     compType.textContent = "-";
@@ -523,12 +527,12 @@ function rgbToHex(r, g, b) {
 }
 
 const library = [
-    new Button(null),
-    new Text(null),
-    new ProgressBar(null),
-    new DropdownMenu(null, null),
-    new Img(null),
-    new Input(null)
+    new Button(null, 'null'),
+    new Text(null, 'null'),
+    new ProgressBar(null, 'null'),
+    new DropdownMenu(null, null, 'null'),
+    new Img(null, 'null'),
+    new Input(null, 'null')
 ]
 
 
@@ -625,6 +629,7 @@ for (let component of library) {
             tmp.style.height = c.properties.height;
             tmp.style.zIndex = null;
             c.setElement(tmp);
+            c.setGroup(new Group());
             if (c instanceof DropdownMenu) {
                 c.activate();
                 console.warn("Activated");
