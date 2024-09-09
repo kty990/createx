@@ -3,8 +3,9 @@ const titleBar = document.getElementsByClassName("title-bar")[0];
 const file = titleBar.querySelector("#file");
 const edit = titleBar.querySelector("#edit");
 const view = titleBar.querySelector("#view");
+const components = titleBar.querySelector("#components");
 
-const values = [file, edit, view];
+const values = [file, edit, view, components];
 
 var lastActive = null;
 

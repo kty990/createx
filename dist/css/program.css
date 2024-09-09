@@ -8,7 +8,7 @@
     --interaction-border: #5e503f;
     --element: #23333b;
     --text: #f2f4f3;
-    --text-hover: #575757;
+    --text-hover: #a2a2a2;
     --selected: #bb6130;
 
     --function: #9c5aec;
@@ -481,9 +481,9 @@ body {
     -webkit-app-region: drag;
     user-select: none;
     position: fixed;
-    left: 200px;
+    left: 245px;
     top: 0;
-    width: calc(100vw - 260px);
+    width: calc(100vw - 305px);
     border-bottom-style: groove;
     border-color: var(--border);
     border-width: 1px;
@@ -602,6 +602,22 @@ body {
     height: fit-content;
 }
 
+#components {
+    position: fixed;
+    top: 0;
+    left: 195px;
+    margin: 0;
+    z-index: 1000;
+    color: var(--text);
+    font-size: 12px;
+    font-family: 'Rajdhani', sans-serif;
+}
+
+#components>div>p {
+    margin: 0;
+    height: fit-content;
+}
+
 .dropdown {
     display: flex;
     flex-direction: column;
@@ -625,4 +641,9 @@ body {
     padding-right: 2px;
     margin-bottom: 5px;
     color: var(--text);
+}
+
+.dropdown>*:hover {
+    color: var(--text-hover);
+    cursor: pointer;
 }

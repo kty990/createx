@@ -143,6 +143,7 @@ class Component {
 
     update(properties = null) {
         let p = properties || this.properties;
+        window.api.send("editComponent", this.name, JSON.stringify(p));
         for (const [key, value] of Object.entries(p)) {
             this.element.style.setProperty(key.replace("_", "-"), value);
         }
