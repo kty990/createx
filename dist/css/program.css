@@ -15,6 +15,11 @@
     --punctuation: #69a0a09d;
 }
 
+.disabled {
+    cursor: not-allowed !important;
+    color: var(--text-hover) !important;
+}
+
 body {
     background-color: #fff;
     outline: unset;

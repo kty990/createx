@@ -6,14 +6,13 @@ const fs = require('fs');
 
 class Event {
     callbacks = {};
-    _action = new Event();
     constructor() { }
     fire(channel, ...args) {
         if (Array.from(Object.keys(this.callbacks)).indexOf(channel) == -1) {
             this.callbacks[channel] = [];
         }
         this.callbacks[channel].forEach(c => c(...args));
-        this._action.fire(channel, ...args);
+        _action.fire(channel, ...args);
     }
     /**
      * 
@@ -29,11 +28,11 @@ class Event {
     invoke(channel) {
         return new Promise((resolve) => {
             const r = (...args) => {
-                this._action.removeCallback(channel, r);
+                _action.removeCallback(channel, r);
                 resolve(...args);
             }
-            this._action.receive(channel, r);
-            this._action.fire(channel);
+            _action.receive(channel, r);
+            _action.fire(channel);
         })
     }
 
@@ -49,6 +48,8 @@ class Event {
         this.callbacks[channel].splice(this.callbacks.indexOf(cb), 1);
     }
 }
+
+var _action = new Event();
 
 const indexjs = `class GraphicsWindow {
     constructor() {
@@ -67,7 +68,7 @@ const indexjs = `class GraphicsWindow {
             const { Notification } = require('electron')
 
             const NOTIFICATION_TITLE = 'Error'
-            const NOTIFICATION_BODY = \`${e}\`
+            const NOTIFICATION_BODY = \`\${e}\`
 
             new Notification({
                 title: NOTIFICATION_TITLE,
