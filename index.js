@@ -15,7 +15,7 @@ fs.readFile("./license.md", (err, data) => {
 let devToolsOpened = false;
 
 class GraphicsWindow {
-    constructor(html) {
+    constructor(html, width = 800, height = 600, forceMax = false) {
         try {
             this.window = null;
             this.current_z_index = 0;
@@ -25,7 +25,7 @@ class GraphicsWindow {
             this.currentProject = null;
 
             app.on('ready', async () => {
-                await this.createWindow(html);
+                await this.createWindow(html, width, height, forceMax);
             });
         } catch (e) {
             const { Notification } = require('electron')
@@ -40,19 +40,24 @@ class GraphicsWindow {
         }
     }
 
-    async createWindow(html) {
-        this.window = new BrowserWindow({
-            width: 800,
-            height: 600,
-            minWidth: 800,   // Set the minimum width
-            minHeight: 600,  // Set the minimum height
+    async createWindow(html, w, h, forceMax = false) {
+        let options = {
+            width: w,
+            height: h,
+            minWidth: w,   // Set the minimum width
+            minHeight: h,  // Set the minimum height
             frame: false, // Remove the default window frame (including the title bar)
             webPreferences: {
                 nodeIntegration: true,
                 spellcheck: false,
                 preload: path.join(__dirname, './dist/js/preload.js')
             },
-        });
+        }
+        if (forceMax) {
+            options.maxHeight = h;
+            options.maxWidth = w;
+        }
+        this.window = new BrowserWindow(options);
 
         // Set the window icon
         const iconPath = path.join(__dirname, './dist/images/icon.png');
@@ -256,9 +261,7 @@ ipcMain.on("createComponent", (event, component) => {
     components.push(component);
     console.log("Component created.", component);
 })
-ipcMain.on("close", () => {
-    graphicsWindow.window.close();
-})
+
 
 ipcMain.on("newJSFile", () => {
     let file = new File();
@@ -267,8 +270,24 @@ ipcMain.on("newJSFile", () => {
     graphicsWindow.window.webContents.send("newJSFile", file.name);
 })
 
+ipcMain.on("close", () => {
+    graphicsWindow.window.close();
+    console.log("close")
+})
+
 ipcMain.on("minimize", () => {
     graphicsWindow.window.minimize();
+    console.log("minimize");
+})
+
+ipcMain.on("close_settings", () => {
+    console.log("close_settings");
+    settingsWindow.window.close();
+})
+
+ipcMain.on("minimize_settings", () => {
+    console.log("minimize_settings");
+    settingsWindow.window.minimize();
 })
 
 ipcMain.on("dev-refresh", () => {
@@ -360,10 +379,21 @@ ipcMain.on("toggleFullscreen", () => {
 })
 
 ipcMain.on("settings", () => {
+    console.log("Settings");
     // TODO: New window with settings to change for createx, not for created applications
     if (settingsWindow == null) {
         settingsWindow = new GraphicsWindow('./dist/html/settings.html');
+        settingsWindow.createWindow('./dist/html/settings.html', 400, 1000, true);
+        settingsWindow.window.on('closed', () => {
+            settingsWindow = null;
+        });
+    } else {
+        console.log("wtf");
     }
+})
+
+ipcMain.on("settings-action", (ev, data) => {
+
 })
 
 app.on('window-all-closed', () => {

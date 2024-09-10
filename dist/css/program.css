@@ -388,15 +388,16 @@ div {
     outline: unset;
 }
 
-.property>input[type=file] {
-    display: none;
 
-}
 
 .property>input {
     border-color: var(--interaction-border);
     border-style: solid;
     font-size: 1vh;
+}
+
+.property>input[type=file] {
+    display: none;
 }
 
 .property>label {

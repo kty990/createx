@@ -6,15 +6,8 @@
     <meta name="viewport" content="width=device-width">
     <title>CREATEX</title>
     <link href="../css/program.css" rel="stylesheet" type="text/css" />
+    <link href="../css/settings.css" rel="stylesheet" type="text/css" />
 
-    <!--     
-    <link href="../css/program.css" rel="stylesheet" type="text/css" />
-    <link href="../css/program.css" rel="stylesheet" type="text/css" />
-    <link href="../css/program.css" rel="stylesheet" type="text/css" />
-    <link href="../css/program.css" rel="stylesheet" type="text/css" />
-    <link href="../css/program.css" rel="stylesheet" type="text/css" /> -->
-
-    <!-- ./standalone-tokens.css , ./standaloneQuickInput.css , ./aria.css , ./style.css , ./hover.css-->
 </head>
 
 <body>
@@ -22,54 +15,25 @@
     <div class="title-bar">
         <div class="title-bar-content">
             <!-- <img src="../images/icon.png" id="icon"> -->
-            <p>CREATEX</p>
-        </div>
-        <div id="file">
-            <div style="display: flex; align-items: center;height: 30px;">
-                <p>File</p>
-            </div>
-            <div class="dropdown">
-                <p id="new">New</p>
-                <p id="open">Open</p>
-                <p id="save">Save</p>
-                <p id="build">Build</p>
-                <p id="settings">Settings</p>
-            </div>
-        </div>
-        <div id="edit">
-            <div style="display: flex; align-items: center;height: 30px;">
-                <p>Edit</p>
-            </div>
-            <div class="dropdown">
-                <p id="cut">Cut</p>
-                <p id="copy">Copy</p>
-                <p id="paste">Paste</p>
-            </div>
-        </div>
-        <div id="view">
-            <div style="display: flex; align-items: center;height: 30px;">
-                <p>View</p>
-            </div>
-            <div class="dropdown">
-                <p id="fullscreen">Fullscreen</p>
-            </div>
-        </div>
-        <div id="components">
-            <div style="display: flex; align-items: center;height: 30px;">
-                <p>Components</p>
-            </div>
-            <div class="dropdown">
-                <p id="group" class="disabled">Group</p>
-                <p id="ungroup" class="disabled">Ungroup</p>
-            </div>
+            <p>CreatEx Settings</p>
         </div>
         <div class="title-bar-buttons">
-            <div class="title-bar-button" id="minimize">_</div>
-            <div class="title-bar-button" id="close">X</div>
+            <div class="title-bar-button" id="min">_</div>
+            <div class="title-bar-button" id="closee">X</div>
+        </div>
+    </div>
+
+    <div id="settings_flex">
+        <div class="category">
+            <p class="title">ICON</p>
+            <label>Select file</label>
+            <input type="file">
         </div>
     </div>
 
     <script src="../js/settings.js"></script>
+    <!-- <script src="../js/program.js"></script> -->
+
 </body>
 
 </html>
