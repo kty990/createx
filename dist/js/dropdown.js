@@ -78,3 +78,8 @@ window.api.on("paste", () => {
 /*** VIEW ***/
 
 // fullscreen
+
+
+/*** COMPONENTS ***/
+
+// Group, Ungroup done in home.js
