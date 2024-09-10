@@ -78,6 +78,9 @@ window.api.on("paste", () => {
 /*** VIEW ***/
 
 // fullscreen
+window.api.on("fullscreen", () => {
+    window.api.send("toggleFullscreen");
+})
 
 
 /*** COMPONENTS ***/

@@ -327,6 +327,10 @@ ipcMain.on("executeDropdown", (event, id) => {
     graphicsWindow.window.webContents.send(id, null);
 })
 
+ipcMain.on("toggleFullscreen", () => {
+    graphicsWindow.window.setFullScreen(!graphicsWindow.window.isFullScreen());
+})
+
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
         app.quit();

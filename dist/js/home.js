@@ -321,7 +321,6 @@ class Component {
             c.selected = true;
         }
         mEvent.fire("selectedElementChange", true, selectedElement);
-        // TODO: Select all elements of group, add to selectedElement variable
 
     }
 
@@ -1008,6 +1007,8 @@ window.api.on("group", async () => {
     }
 })
 
+
+// Fix the group numbering when ungrouping : TODO
 window.api.on("ungroup", () => {
     if (selectedElement.length <= 1) return;
     for (let e of selectedElement) {
