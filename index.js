@@ -331,6 +331,10 @@ ipcMain.on("toggleFullscreen", () => {
     graphicsWindow.window.setFullScreen(!graphicsWindow.window.isFullScreen());
 })
 
+ipcMain.on("settings", () => {
+    // TODO: New window with settings to change for createx, not for created applications
+})
+
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {
         app.quit();

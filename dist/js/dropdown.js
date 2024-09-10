@@ -49,6 +49,11 @@ window.api.on("build", () => {
     // Display notification for status of build, or open popup to display messages as build is running / completed
 })
 
+window.api.on("settings", () => {
+    // Open another window
+    window.api.send("settings");
+})
+
 
 
 
