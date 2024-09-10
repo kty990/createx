@@ -206,7 +206,7 @@ class Component {
     }
 
     setElement(e) {
-        console.warn('Setting element:', e);
+        // console.warn('Setting element:', e);
         this.element = e;
         // this.setProperty('position', 'absolute', null);
         this.setProperty('overflow', 'hidden', null);
@@ -218,7 +218,7 @@ class Component {
                 this.properties[`HOVER${key}`] = value;
             }
         }
-        console.log('Setting:', setting);
+        // console.log('Setting:', setting);
         this.onSetElement(e);
         let properties = this.properties;
         properties.name = this.name;
@@ -229,7 +229,7 @@ class Component {
                 if (['x', 'y', 'left', 'top', 'type'].includes(key)) continue; // This will change when the project is saved/built
                 if (key.indexOf("HOVER") == -1) continue;
                 this.element.style.setProperty(key, value);
-                console.log(`Setting ${key} to ${value}`);
+                // console.log(`Setting ${key} to ${value}`);
             }
             if (this instanceof ProgressBar) {
                 this.setProgress(this.progress);
@@ -241,7 +241,7 @@ class Component {
                 if (key.indexOf("HOVER") != -1) continue;
                 if (key == 'backgroundColor' || key == 'background_color') {
                     this.element.style.setProperty('background', value);
-                    console.log(`Setting background to ${value}`);
+                    // console.log(`Setting background to ${value}`);
                 } else {
                     this.element.style.setProperty(key, value);
                     // console.log(`Setting ${key} to ${value}`);
@@ -309,7 +309,7 @@ class Component {
             selectedElement.forEach(c => c.comp.deselect());
             selectedElement = [];
         }
-        console.log('Group:', this.group);
+        // console.log('Group:', this.group);
         for (let c of this.group.components) {
             let tmp = { comp: c, element: c.element };
             for (let i = 0; i < selectedElement.length; i++) {
@@ -426,8 +426,8 @@ class DropdownMenu extends Component {
         tmp.style.visibility = 'hidden';
         this.main = tmp;
         this.element.appendChild(this.main);
-        console.log(this.main);
-        console.log("this.main @super^")
+        // console.log(this.main);
+        // console.log("this.main @super^")
         let properties = this.properties;
         properties.name = this.name;
         window.api.send("createComponent", properties);
@@ -451,8 +451,8 @@ class DropdownMenu extends Component {
     }
 
     addDropdown() {
-        console.log(this.main);
-        console.log('this.main^');
+        // console.log(this.main);
+        // console.log('this.main^');
         let e = document.createElement("input");
         e.type = 'text';
         e.value = `Dropdown ${++this.dropdowns}`;
@@ -484,7 +484,7 @@ class Property {
         this.id = ++Property.id;
     }
     isAllowed(componentName) {
-        console.log(componentName, this.name);
+        // console.log(componentName, this.name);
         return this.components.includes(componentName) || this.components.includes("*");
     }
     createElement() {
@@ -523,7 +523,7 @@ class Property {
                 values.push(p);
             }
         }
-        console.log(keys, values);
+        // console.log(keys, values);
         return { keys, values };
     }
     activate() { }
@@ -883,79 +883,77 @@ for (let component of library) {
 
 propertyApply.addEventListener("click", () => {
     if (dragdrop.style.zIndex != '2') return;
-    if (selectedElement) {
-        // console.log(selectedElement[0].comp);
-        // console.log(displayedProperties.map(c => c.element));
-        const c = selectedElement[0].comp;
-        for (let p of displayedProperties) {
-            if (!p.property instanceof Property) continue;
-            if (p.type == 'property') {
-                console.log(p);
-                let v = p.property.element.querySelector("input").value;
-                // console.log(v);
-                if (`${v}`.length == 0 || v == null || v == undefined) {
-                    console.log("Continue", p.name, `${v}`, p.property.element);
-                    continue;
-                }
-                c.setProperty(p.name, v, p.property);
-                if (p.name == "textContent") {
-                    selectedElement[0].element.textContent = v;
-                    console.warn(`Setting ${p.name} to ${v}`);
-                } else if (p.name == 'x') {
-                    selectedElement[0].element.style.left = `${v}px`;
-                    console.warn(`Setting ${p.name} to ${v}`);
-                } else if (p.name == 'y') {
-                    console.warn(`Setting ${p.name} to ${v}`);
-                    selectedElement[0].element.style.top = `${v}px`;
-                } else if (p.name == 'progress') {
-                    selectedElement[0].comp.setProgress(v);
-                } else {
-                    console.warn(`Setting ${p.name} to ${v}`);
-                    if (selectedElement[0].comp instanceof ProgressBar && p.name == 'background_color') {
-                        // console.log("YES");
-                        selectedElement[0].comp.background = v;
-                        selectedElement[0].comp.setProgress(selectedElement[0].comp.progress);
-                    } else {
-                        selectedElement[0].element.style.setProperty(p.name, `${v}${(p.name == 'width' || p.name == 'height') ? 'px' : ''}`);
+    if (selectedElement.length >= 1) {
+        for (let se of selectedElement) {
+            const c = se.comp;
+            for (let p of displayedProperties) {
+                if (!p.property instanceof Property) continue;
+                if (p.type == 'property') {
+                    let v = p.property.element.querySelector("input").value;
+                    if (`${v}`.length == 0 || v == null || v == undefined) {
+                        console.log("Continue", p.name, `${v}`, p.property.element);
+                        continue;
                     }
-                }
-                switch (p.name) {
-                    case 'name':
-                        selectedElement[0].comp.name = p.element.value;
-                        p.element.placeholder = selectedElement[0].comp.name;
-                        break;
-                    case 'color':
-                        let values = c.element.style.color.replace("rgb", '').replace('(', '').replace(")", '').split(",");
-                        let hex = rgbToHex(values[0], values[1], values[2]);
-                        p.element.value = hex;
-                        // console.log(hex);
-                        break;
-                    case 'backgroundColor':
-                        p.element.value = c.element.style.backgroundColor;
-                        break;
-                    case 'textContent':
-                        p.element.placeholder = c.element.textContent;
-                        break;
-                    case 'x':
-                        p.element.placeholder = parseInt(c.element.style.left.replace('px', ''));
-                        break;
-                    case 'y':
-                        p.element.placeholder = parseInt(c.element.style.top.replace('px', '')) || c.position.x;
-                        break;
-                    case 'width':
-                        p.element.placeholder = parseInt(c.element.style.width.replace('px', '')) || c.size.width;
-                        break;
-                    case 'height':
-                        p.element.placeholder = parseInt(c.element.style.height.replace('px', '')) || c.size.height;
+                    c.setProperty(p.name, v, p.property);
+                    if (p.name == "textContent") {
+                        se.element.textContent = v;
+                        console.warn(`Setting ${p.name} to ${v}`);
+                    } else if (p.name == 'x') {
+                        se.element.style.left = `${v}px`;
+                        console.warn(`Setting ${p.name} to ${v}`);
+                    } else if (p.name == 'y') {
+                        console.warn(`Setting ${p.name} to ${v}`);
+                        se.element.style.top = `${v}px`;
+                    } else if (p.name == 'progress') {
+                        se.comp.setProgress(v);
+                    } else {
+                        console.warn(`Setting ${p.name} to ${v}`);
+                        if (se.comp instanceof ProgressBar && p.name == 'background_color') {
+                            // console.log("YES");
+                            se.comp.background = v;
+                            se.comp.setProgress(se.comp.progress);
+                        } else {
+                            se.element.style.setProperty(p.name, `${v}${(p.name == 'width' || p.name == 'height') ? 'px' : ''}`);
+                        }
+                    }
+                    switch (p.name) {
+                        case 'name':
+                            se.comp.name = p.element.value;
+                            p.element.placeholder = se.comp.name;
+                            break;
+                        case 'color':
+                            let values = c.element.style.color.replace("rgb", '').replace('(', '').replace(")", '').split(",");
+                            let hex = rgbToHex(values[0], values[1], values[2]);
+                            p.element.value = hex;
+                            // console.log(hex);
+                            break;
+                        case 'backgroundColor':
+                            p.element.value = c.element.style.backgroundColor;
+                            break;
+                        case 'textContent':
+                            p.element.placeholder = c.element.textContent;
+                            break;
+                        case 'x':
+                            p.element.placeholder = parseInt(c.element.style.left.replace('px', ''));
+                            break;
+                        case 'y':
+                            p.element.placeholder = parseInt(c.element.style.top.replace('px', '')) || c.position.x;
+                            break;
+                        case 'width':
+                            p.element.placeholder = parseInt(c.element.style.width.replace('px', '')) || c.size.width;
+                            break;
+                        case 'height':
+                            p.element.placeholder = parseInt(c.element.style.height.replace('px', '')) || c.size.height;
 
-                }
-                if (p.element.type != "color") {
-                    p.element.value = null;
-                }
-            } else {
-                // ENUM LOGIC HERE
-                if (p.name == 'itype') {
-                    p.element.setAttribute('type', p.property.value);
+                    }
+                    if (p.element.type != "color") {
+                        p.element.value = null;
+                    }
+                } else {
+                    // ENUM LOGIC HERE
+                    if (p.name == 'itype') {
+                        p.element.setAttribute('type', p.property.value);
+                    }
                 }
             }
         }
