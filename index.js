@@ -2,7 +2,7 @@ const { app, BrowserWindow, Menu, dialog, ipcMain, autoUpdater, shell } = requir
 const path = require('path');
 const fs = require('fs');
 const util = require('util');
-const builder = require("./build");
+const { build, ActionEvent } = require("./build");
 
 var licenseData;
 var currentFile;
@@ -76,6 +76,7 @@ const components = []
 const files = [];
 
 class File {
+    code = "";
     constructor(name = null) {
         if (name == null) {
             this.name = `File ${files.length + 1}`;
@@ -89,6 +90,13 @@ class File {
     }
 }
 
+ActionEvent.receive('get_js_files', () => {
+    ActionEvent.fire('get_js_files', files);
+})
+
+ActionEvent.receive('get_components', () => {
+    ActionEvent.fire('get_components', components);
+})
 
 async function exportProject() {
     // Get export destination
@@ -311,7 +319,7 @@ ipcMain.on("openFile", async () => {
 })
 
 ipcMain.on("buildFile", async () => {
-    let result = await builder.build();
+    let result = await build();
     graphicsWindow.window.webContents.send("buildFile", result);
 })
 
