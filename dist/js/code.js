@@ -6,10 +6,16 @@ const code_storage = {
     newFileButton: document.getElementById("apply")
 }
 
+/**
+ * @returns {undefined}
+ */
 function removeAll() {
     code_storage.directory.innerHTML = "";
 }
 
+/**
+ * @returns {undefined}
+ */
 function displayFiles() {
     removeAll();
     for (let file of code_storage.files) {

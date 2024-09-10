@@ -1,6 +1,12 @@
 var root_count = 0;
 
 class hNest {
+    /**
+     * @param {hNest | hRoot} parent
+     * @param {number} nestLevel
+     * @param {String} id
+     * @param {String} displayValue
+     */
     constructor(parent, nestLevel, id, displayValue) {
         displayValue = `<span id='indent' style='margin-left: ${((nestLevel - 1) * 10) + 5}px;margin-right: 5px;'>⇁</span>${displayValue}`
         this.parent = parent;
@@ -14,12 +20,12 @@ class hNest {
     }
 }
 
-/**
- * Needs to be modified.
- * refresh method needs to properly display the parent-child relationship
- *    -> Currently just sorts by nest level
- */
 class hRoot {
+    /**
+     * @param {String} id
+     * @param {HTMLElement} element
+     * @param {String | null} displayvalue
+     */
     constructor(id, element, displayValue = "") {
         this.id = id;
         this.element = element;
@@ -56,6 +62,11 @@ class hRoot {
     }
 }
 
+/**
+ * 
+ * @param {String} displayValue 
+ * @returns {{id:number,root:hRoot}}
+ */
 function generateRoot(displayValue) {
     let r = document.createElement("div");
     r.id = `${++root_count}`;
