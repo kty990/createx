@@ -463,7 +463,7 @@ const registry = {
     'Input': Input
 }
 
-var selectedElement = null;
+var selectedElement = [];
 
 const properties = {
     'name': new Property('Name', 'name', 'text', ['*']),
@@ -476,11 +476,11 @@ const properties = {
     'height': new Property('Height', 'height', 'number', ['*']),
     'progress': new Property('Progress', 'progress', 'number', ['ProgressBar']),
     'addDropdown': new Property('Add Option', 'addDropdown', 'button', ['DropdownMenu'], (event) => {
-        const component = selectedElement.comp;
+        const component = selectedElement[0].comp;
         component.addDropdown();
     }),
     'removeDropdown': new Property('Remove Option', 'removeDropdown', 'button', ['DropdownMenu'], (event) => {
-        const component = selectedElement.comp;
+        const component = selectedElement[0].comp;
         component.removeDropdown();
     }),
     'src_file': new Property("File", 'src', 'file', ['Img']),
@@ -635,10 +635,16 @@ for (let component of library) {
                 console.warn("Activated");
             }
 
-            tmp.addEventListener("click", () => {
+            tmp.addEventListener("click", (e) => {
                 removeAll();
-                if (selectedElement != null) selectedElement.comp.deselect();
-                selectedElement = { comp: c, element: tmp };
+                if (e.shiftKey) {
+                    if (selectedElement.indexOf({ comp: c, element: tmp }) != -1) return;
+                    selectedElement.push({ comp: c, element: tmp })
+                    c.select();
+                    return;
+                }
+                if (selectedElement.length != 0) selectedElement.forEach(d => d.comp.deselect());
+                selectedElement = [{ comp: c, element: tmp }];
                 c.select();
                 displayedProperties = [];
                 for (const [name, p] of Object.entries(properties)) {
@@ -676,14 +682,14 @@ for (let component of library) {
                                 property.querySelector("input").placeholder = selectedElement.comp.progress;
                                 break;
                             case 'src_file':
-                                property.querySelector("input").placeholder = selectedElement.comp.properties.src || "src";
+                                property.querySelector("input").placeholder = selectedElement[0].comp.properties.src || "src";
                             case 'src_text':
-                                property.querySelector("input").placeholder = selectedElement.comp.properties.src || "src";;
+                                property.querySelector("input").placeholder = selectedElement[0].comp.properties.src || "src";;
 
                         }
-                        if (selectedElement.comp instanceof ProgressBar && (name == 'background_color')) {
+                        if (selectedElement[0].comp instanceof ProgressBar && (name == 'background_color')) {
                             console.log("YES");
-                            property.querySelector("input").value = selectedElement.comp.background;
+                            property.querySelector("input").value = selectedElement[0].comp.background;
                         }
                         directory.appendChild(property);
                     }
@@ -833,9 +839,9 @@ propertyApply.addEventListener("click", () => {
 
 dragdrop.addEventListener("click", (e) => {
     if (e.target != dragdrop) return;
-    if (selectedElement) {
-        selectedElement.comp.deselect();
-        selectedElement = null;
+    if (selectedElement.length > 0) {
+        selectedElement.forEach(d => d.comp.deselect());
+        selectedElement = [];
         removeAll();
     }
 })
