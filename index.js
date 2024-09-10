@@ -328,6 +328,33 @@ ipcMain.on("executeDropdown", (event, id) => {
     graphicsWindow.window.webContents.send(id, null);
 })
 
+ipcMain.on("upload", async () => {
+    let { filePaths, canceled } = await dialog.showOpenDialog({
+        defaultPath: ``,
+        filters: [
+            { name: 'MP4', extensions: ['mp4'] },
+            { name: 'MP3', extensions: ['mp4'] },
+            { name: 'PNG', extensions: ['png'] },
+            { name: 'JPG', extensions: ['jpg', 'jpeg'] },
+            { name: 'Any File', extensions: ['*'] },
+        ],
+        buttonLabel: "Upload"
+    });
+    if (canceled) {
+        resolve({ result: false, value: 'Cancelled', license: licenseData });
+        return;
+    };
+
+    filePaths.forEach(fp => {
+        let path = fp.split("\\");
+        path = path[path.length - 1];
+        fs.copyFile(fp, `./dist/stored_images/${path}`, (err) => {
+            console.log((err == null) ? `${fp} copied to ./dist/stored_images successfully.` : `${fp} couldn't be copied to ./dist/stored_images\n\tError: ${err}`);
+        });
+    })
+
+})
+
 ipcMain.on("toggleFullscreen", () => {
     graphicsWindow.window.setFullScreen(!graphicsWindow.window.isFullScreen());
 })

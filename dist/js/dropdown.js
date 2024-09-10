@@ -54,6 +54,11 @@ window.api.on("settings", () => {
     window.api.send("settings");
 })
 
+window.api.on("upload", () => {
+    // Open another window
+    window.api.send("upload");
+})
+
 
 
 
