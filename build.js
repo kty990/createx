@@ -6,14 +6,13 @@ const fs = require('fs');
 
 class Event {
     callbacks = {};
-    _action = new Event();
     constructor() { }
     fire(channel, ...args) {
         if (Array.from(Object.keys(this.callbacks)).indexOf(channel) == -1) {
             this.callbacks[channel] = [];
         }
         this.callbacks[channel].forEach(c => c(...args));
-        this._action.fire(channel, ...args);
+        _action.fire(channel, ...args);
     }
     /**
      * 
@@ -29,11 +28,11 @@ class Event {
     invoke(channel) {
         return new Promise((resolve) => {
             const r = (...args) => {
-                this._action.removeCallback(channel, r);
+                _action.removeCallback(channel, r);
                 resolve(...args);
             }
-            this._action.receive(channel, r);
-            this._action.fire(channel);
+            _action.receive(channel, r);
+            _action.fire(channel);
         })
     }
 
@@ -49,6 +48,68 @@ class Event {
         this.callbacks[channel].splice(this.callbacks.indexOf(cb), 1);
     }
 }
+
+var _action = new Event();
+
+const indexjs = `class GraphicsWindow {
+    constructor() {
+        try {
+            this.window = null;
+            this.current_z_index = 0;
+            this.layers = []; // List to store layers
+            this.active_layer = null; // Currently active layer
+
+            this.currentProject = null;
+
+            app.on('ready', async () => {
+                await this.createWindow();
+            });
+        } catch (e) {
+            const { Notification } = require('electron')
+
+            const NOTIFICATION_TITLE = 'Error'
+            const NOTIFICATION_BODY = \`\${e}\`
+
+            new Notification({
+                title: NOTIFICATION_TITLE,
+                body: NOTIFICATION_BODY
+            }).show()
+        }
+    }
+
+    async createWindow() {
+        this.window = new BrowserWindow({
+            width: 800,
+            height: 600,
+            minWidth: 800,   // Set the minimum width
+            minHeight: 600,  // Set the minimum height
+            frame: false, // Remove the default window frame (including the title bar)
+            webPreferences: {
+                nodeIntegration: true,
+                spellcheck: false,
+                preload: path.join(__dirname, './js/preload.js')
+            },
+        });
+
+        // Set the window icon
+        //const iconPath = path.join(__dirname, './images/icon.png');
+        //this.window.setIcon(iconPath);
+
+        const menu = Menu.buildFromTemplate([]);
+        Menu.setApplicationMenu(menu);
+
+        this.window.setMenu(menu);
+
+        this.window.loadFile('./html/index.html');
+
+        this.window.on('closed', () => {
+            this.window = null;
+        });
+    }
+}
+
+const graphicsWindow = new GraphicsWindow();`
+
 const ActionEvent = new Event();
 
 /**
@@ -165,9 +226,9 @@ async function build() {
     </html>`
 
 
-    fs.writeFile(`./temp/${formattedDate}/html/index.html`, "", (err) => { });
+    fs.writeFile(`./temp/${formattedDate}/html/index.html`, _html, (err) => { });
     fs.writeFile(`./temp/${formattedDate}/css/index.css`, recompileCSS(css), (err) => { });
-    fs.writeFile(`./temp/${formattedDate}/js/index.js`, "", (err) => { });
+    fs.writeFile(`./temp/${formattedDate}/index.js`, indexjs, (err) => { });
     //index.js >> files (const)
     for (const file of jsFiles) {
         let data = file.code;
@@ -177,7 +238,7 @@ async function build() {
     return new Promise((resolve) => {
         if (canceled) resolve('Packaging failed: Build process cancelled');
         let result = '<err>';
-        electronPackager('.', { // MODIFY THIS: Build path will be a temporary file created for the purpose of building
+        electronPackager(`./temp/${formattedDate}`, {
             platform: 'win32',
             arch: 'x64',
             out: 'packaged_files',
