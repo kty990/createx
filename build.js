@@ -5,7 +5,7 @@ const { dialog } = require('electron');
 
 /**
  * 
- * @returns {String} Build success as string
+ * @returns {Promise<String>} Build success as string
  */
 async function build() {
     let { filePaths, canceled } = await dialog.showOpenDialog({

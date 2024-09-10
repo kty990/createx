@@ -310,8 +310,9 @@ ipcMain.on("openFile", async () => {
     graphicsWindow.window.webContents.send("openFile", result);
 })
 
-ipcMain.on("buildFile", () => {
-    builder.build();
+ipcMain.on("buildFile", async () => {
+    let result = await builder.build();
+    graphicsWindow.window.webContents.send("buildFile", result);
 })
 
 ipcMain.on("executeDropdown", (event, id) => {

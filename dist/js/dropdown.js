@@ -45,6 +45,7 @@ window.api.on("build", () => {
     // Display open file window to get path
     // Build application from file
     const status = window.api.invoke("build");
+    console.warn('Build Status:', status);
     // Display notification for status of build, or open popup to display messages as build is running / completed
 })
 
