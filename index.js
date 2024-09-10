@@ -6,6 +6,7 @@ const { build, ActionEvent } = require("./build");
 
 var licenseData;
 var currentFile;
+var settingsWindow = null;
 
 fs.readFile("./license.md", (err, data) => {
     licenseData = data;
@@ -14,7 +15,7 @@ fs.readFile("./license.md", (err, data) => {
 let devToolsOpened = false;
 
 class GraphicsWindow {
-    constructor() {
+    constructor(html) {
         try {
             this.window = null;
             this.current_z_index = 0;
@@ -24,7 +25,7 @@ class GraphicsWindow {
             this.currentProject = null;
 
             app.on('ready', async () => {
-                await this.createWindow();
+                await this.createWindow(html);
             });
         } catch (e) {
             const { Notification } = require('electron')
@@ -39,7 +40,7 @@ class GraphicsWindow {
         }
     }
 
-    async createWindow() {
+    async createWindow(html) {
         this.window = new BrowserWindow({
             width: 800,
             height: 600,
@@ -62,7 +63,7 @@ class GraphicsWindow {
 
         this.window.setMenu(menu);
 
-        this.window.loadFile('./dist/html/index.html');
+        this.window.loadFile(html);
 
         this.window.on('closed', () => {
             this.window = null;
@@ -70,7 +71,7 @@ class GraphicsWindow {
     }
 }
 
-const graphicsWindow = new GraphicsWindow();
+const graphicsWindow = new GraphicsWindow('./dist/html/index.html');
 
 const components = []
 const files = [];
@@ -333,6 +334,9 @@ ipcMain.on("toggleFullscreen", () => {
 
 ipcMain.on("settings", () => {
     // TODO: New window with settings to change for createx, not for created applications
+    if (settingsWindow == null) {
+        settingsWindow = new GraphicsWindow('./dist/html/settings.html');
+    }
 })
 
 app.on('window-all-closed', () => {
