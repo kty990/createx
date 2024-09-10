@@ -210,13 +210,15 @@ class Component {
         this.element = e;
         // this.setProperty('position', 'absolute', null);
         this.setProperty('overflow', 'hidden', null);
+        let setting = "";
         for (const [key, value] of Object.entries(this.element.style)) {
             if (this.properties[key]) {
+                setting += `${key} = ${value}\nHOVER${key} = ${value}\n\n`;
                 this.properties[`${key}`] = value;
                 this.properties[`HOVER${key}`] = value;
             }
         }
-        console.log(e);
+        console.log('Setting:', setting);
         this.onSetElement(e);
         let properties = this.properties;
         properties.name = this.name;
@@ -226,8 +228,8 @@ class Component {
             for (const [key, value] of Object.entries(this.properties)) {
                 if (['x', 'y', 'left', 'top', 'type'].includes(key)) continue; // This will change when the project is saved/built
                 if (key.indexOf("HOVER") == -1) continue;
-                this.element.style.setProperty(key.replace("HOVER", ""), value);
-                // console.log(`Setting ${key.replace("HOVER", "")} to ${value}`);
+                this.element.style.setProperty(key, value);
+                console.log(`Setting ${key} to ${value}`);
             }
             if (this instanceof ProgressBar) {
                 this.setProgress(this.progress);
@@ -239,7 +241,7 @@ class Component {
                 if (key.indexOf("HOVER") != -1) continue;
                 if (key == 'backgroundColor' || key == 'background_color') {
                     this.element.style.setProperty('background', value);
-                    // console.log(`Setting background to ${value}`);
+                    console.log(`Setting background to ${value}`);
                 } else {
                     this.element.style.setProperty(key, value);
                     // console.log(`Setting ${key} to ${value}`);
