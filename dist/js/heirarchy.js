@@ -7,9 +7,10 @@ class hNest {
      * @param {String} id
      * @param {String} displayValue
      */
-    constructor(parent, nestLevel, id, displayValue) {
+    constructor(parent, nestLevel, id, displayValue, component) {
         displayValue = `<span id='indent' style='margin-left: ${((nestLevel - 1) * 10) + 5}px;margin-right: 5px;'>⇁</span>${displayValue}`
         this.parent = parent;
+        this.component = component;
         this.id = id;
         this.displayValue = displayValue;
         let nest = document.createElement("div");
@@ -34,12 +35,13 @@ class hRoot {
         this.displayValue = displayValue;
     }
 
-    addNest(p, nestLevel, displayValue) {
+    addNest(p, nestLevel, displayValue, component) {
+        console.warn('Adding nest:', nestLevel, component);
         let parent = p;
         if (p.nest) {
             parent = p.nest;
         }
-        let n = new hNest(parent, nestLevel, `${nestLevel}`, `${nestLevel}`, displayValue);
+        let n = new hNest(parent, nestLevel, `${nestLevel}`, displayValue, component);
         if (this.nests[`${nestLevel}`] != undefined && this.nests[`${nestLevel}`] != null) {
             this.nests[`${nestLevel}`].push(n);
         } else {
@@ -50,14 +52,31 @@ class hRoot {
         return { id: nestLevel, nest: n } // replace when logic implemented
     }
 
+    removeNest(nestLevel, component) {
+        console.warn('Removing nest:', nestLevel, component);
+        try {
+            for (let i = 0; i < this.nests[`${nestLevel}`]; i++) {
+                if (this.nests[`${nestLevel}`][i].component == component) {
+                    this.nests[`${nestLevel}`].splice(i, 1);
+                }
+            }
+        } catch (e) { }
+    }
+
     refresh() { // parent element = parent.element
         this.element.innerHTML = `${this.displayValue}`;
         for (let level of this.nestLevels) {
             console.log(this.nests[level]);
             for (let e of this.nests[level]) {
-                console.log(e);
+                console.log('Removing:', e);
+                e.element.remove();
+            }
+            for (let e of this.nests[level]) {
+                let ch = Array.from(e.parent.element.children);
+                if (ch.indexOf(e.element) != -1) continue;
                 e.parent.element.appendChild(e.element);
             }
+            console.error('Displaying for refresh:', this.nests[level]);
         }
     }
 }

@@ -1,7 +1,9 @@
 import * as heirarcy from './heirarchy.js';
+import * as dropdown from './dropdown.js';
 
 const dragdropComponents = []
 let displayedProperties = [];
+var selectedElement = [];
 
 /* HTML Content Editting & Logic */
 
@@ -22,20 +24,121 @@ const heirarchyWindow = document.getElementById("heirarchy-edit");
 const editor = document.getElementById("tabs").querySelector("#editor-tab").querySelector('p'); // v editor
 const code = document.getElementById("tabs").querySelector("#code").querySelector('p'); // code editor
 
+class Event {
+    callbacks = {};
+    constructor() { }
+    fire(channel, cont, ...args) {
+        if (Array.from(Object.keys(this.callbacks)).indexOf(channel) == -1) {
+            this.callbacks[channel] = [];
+        }
+        this.callbacks[channel].forEach(c => c(...args));
+        if (cont) {
+            _action.fire(channel, false, ...args);
+        }
+    }
+    /**
+     * 
+     * @param {function(...*)} cb 
+     */
+    receive(channel, cb) {
+        if (Array.from(Object.keys(this.callbacks)).indexOf(channel) == -1) {
+            this.callbacks[channel] = [];
+        }
+        this.callbacks[channel].push(cb);
+    }
+
+    invoke(channel) {
+        return new Promise((resolve) => {
+            const r = (...args) => {
+                _action.removeCallback(channel, r);
+                resolve(...args);
+            }
+            _action.receive(channel, r);
+            _action.fire(channel, false);
+        })
+    }
+
+
+    /**
+     * @param {function(...*)} cb
+     */
+    removeCallback(channel, cb) {
+        if (Array.from(Object.keys(this.callbacks)).indexOf(channel) == -1) {
+            this.callbacks[channel] = [];
+            return; // Nothing to remove in this instance
+        }
+        this.callbacks[channel].splice(this.callbacks.indexOf(cb), 1);
+    }
+}
+const _action = new Event();
+const mEvent = new Event();
+
 class Group {
-    static groups = 0;
+    static group_ids = [];
+    static highest_id = 0;
+    destroyed = false;
     constructor() {
-        this.name = `Group ${++Group.groups}`;
+        let gid = 0;
+        if (Group.group_ids.length == 0) {
+            gid = 1;
+            Group.group_ids.push(gid);
+            Group.highest_id = gid;
+        } else {
+            for (let i = 0; i < Group.highest_id; i++) {
+                if (Group.group_ids.indexOf(i) == -1) {
+                    gid = i;
+                    Group.group_ids.push(gid);
+                    break;
+                }
+            }
+            if (gid == 0) {
+                gid = ++Group.highest_id;
+                Group.group_ids.push(gid);
+            }
+        }
+        this.name = `Group ${gid}`;
+        this.id = gid;
         this.components = [];
         this.root = heirarcy.generateRoot(this.name);
         heirarchyWindow.appendChild(this.root.root.element);
     }
 
+    isEmpty() {
+        return this.components.length == 0;
+    }
+
+    destroy() {
+        return new Promise((resolve) => {
+            if (this.destroyed) resolve();
+            if (this.id == Group.highest_id) {
+                let newid = 0;
+                for (let i = 0; i < this.id; i++) {
+                    if (i < this.id && i > newid) {
+                        newid = i;
+                    }
+                }
+                Group.highest_id = newid;
+            }
+            Group.group_ids.splice(Group.group_ids.indexOf(this.id), 1);
+            this.root.root.element.remove();
+            this.destroyed = true;
+            resolve();
+        })
+    }
+
     addComponent(component) {
         this.components.push(component);
         // Update visuals for heirarchy
-        this.root.addNest(this.root.root, 1, component.name);
+        component.nestLevel = component.nestLevel || 1;
+        this.root.root.addNest(this.root.root, component.nestLevel, component.name, component);
         this.root.root.refresh();
+    }
+
+    removeComponent(component) {
+        try {
+            this.components.splice(this.components.indexOf(component), 1);
+            this.root.root.removeNest(component.nestLevel, component)
+        } catch (_) { }
     }
 }
 
@@ -95,6 +198,7 @@ class Component {
 
     setGroup(g) {
         this.group = g;
+        this.group.addComponent(this);
     }
 
     setOnPropertyChange(func) {
@@ -117,13 +221,13 @@ class Component {
         let properties = this.properties;
         properties.name = this.name;
         window.api.send("createComponent", properties);
-        console.log("Create component", this.name);
+        // console.log("Create component", this.name);
         this.element.addEventListener("mouseenter", () => {
             for (const [key, value] of Object.entries(this.properties)) {
                 if (['x', 'y', 'left', 'top', 'type'].includes(key)) continue; // This will change when the project is saved/built
                 if (key.indexOf("HOVER") == -1) continue;
                 this.element.style.setProperty(key.replace("HOVER", ""), value);
-                console.log(`Setting ${key.replace("HOVER", "")} to ${value}`);
+                // console.log(`Setting ${key.replace("HOVER", "")} to ${value}`);
             }
             if (this instanceof ProgressBar) {
                 this.setProgress(this.progress);
@@ -135,10 +239,10 @@ class Component {
                 if (key.indexOf("HOVER") != -1) continue;
                 if (key == 'backgroundColor' || key == 'background_color') {
                     this.element.style.setProperty('background', value);
-                    console.log(`Setting background to ${value}`);
+                    // console.log(`Setting background to ${value}`);
                 } else {
                     this.element.style.setProperty(key, value);
-                    console.log(`Setting ${key} to ${value}`);
+                    // console.log(`Setting ${key} to ${value}`);
                 }
             }
             if (this instanceof ProgressBar) {
@@ -197,10 +301,28 @@ class Component {
         }
     }
 
-    select() {
-        this.element.style.outlineStyle = 'solid';
-        this.element.style.outlineColor = 'var(--selected)';
+    select(shiftPressed) {
         this.selected = true;
+        if (!shiftPressed) {
+            selectedElement.forEach(c => c.comp.deselect());
+            selectedElement = [];
+        }
+        console.log('Group:', this.group);
+        for (let c of this.group.components) {
+            let tmp = { comp: c, element: c.element };
+            for (let i = 0; i < selectedElement.length; i++) {
+                if (selectedElement[i].comp == tmp.comp) {
+                    selectedElement.splice(i, 1);
+                }
+            }
+            selectedElement.push(tmp);
+            c.element.style.outlineStyle = 'solid';
+            c.element.style.outlineColor = 'var(--selected)';
+            c.selected = true;
+        }
+        mEvent.fire("selectedElementChange", true, selectedElement);
+        // TODO: Select all elements of group, add to selectedElement variable
+
     }
 
     deselect() {
@@ -468,8 +590,6 @@ const registry = {
     'Input': Input
 }
 
-var selectedElement = [];
-
 const properties = {
     'name': new Property('Name', 'name', 'text', ['*']),
     'color': new Property('Color', 'color', 'color', ['*']),
@@ -645,12 +765,12 @@ for (let component of library) {
                 if (e.shiftKey) {
                     if (selectedElement.indexOf({ comp: c, element: tmp }) != -1) return;
                     selectedElement.push({ comp: c, element: tmp })
-                    c.select();
+                    c.select(true);
                     return;
                 }
                 if (selectedElement.length != 0) selectedElement.forEach(d => d.comp.deselect());
                 selectedElement = [{ comp: c, element: tmp }];
-                c.select();
+                c.select(false);
                 displayedProperties = [];
                 for (const [name, p] of Object.entries(properties)) {
                     if (p.isAllowed(getTypeOf(c))) {
@@ -763,9 +883,9 @@ for (let component of library) {
 propertyApply.addEventListener("click", () => {
     if (dragdrop.style.zIndex != '2') return;
     if (selectedElement) {
-        // console.log(selectedElement.comp);
+        // console.log(selectedElement[0].comp);
         // console.log(displayedProperties.map(c => c.element));
-        const c = selectedElement.comp;
+        const c = selectedElement[0].comp;
         for (let p of displayedProperties) {
             if (!p.property instanceof Property) continue;
             if (p.type == 'property') {
@@ -778,30 +898,30 @@ propertyApply.addEventListener("click", () => {
                 }
                 c.setProperty(p.name, v, p.property);
                 if (p.name == "textContent") {
-                    selectedElement.element.textContent = v;
+                    selectedElement[0].element.textContent = v;
                     console.warn(`Setting ${p.name} to ${v}`);
                 } else if (p.name == 'x') {
-                    selectedElement.element.style.left = `${v}px`;
+                    selectedElement[0].element.style.left = `${v}px`;
                     console.warn(`Setting ${p.name} to ${v}`);
                 } else if (p.name == 'y') {
                     console.warn(`Setting ${p.name} to ${v}`);
-                    selectedElement.element.style.top = `${v}px`;
+                    selectedElement[0].element.style.top = `${v}px`;
                 } else if (p.name == 'progress') {
-                    selectedElement.comp.setProgress(v);
+                    selectedElement[0].comp.setProgress(v);
                 } else {
                     console.warn(`Setting ${p.name} to ${v}`);
-                    if (selectedElement.comp instanceof ProgressBar && p.name == 'background_color') {
+                    if (selectedElement[0].comp instanceof ProgressBar && p.name == 'background_color') {
                         // console.log("YES");
-                        selectedElement.comp.background = v;
-                        selectedElement.comp.setProgress(selectedElement.comp.progress);
+                        selectedElement[0].comp.background = v;
+                        selectedElement[0].comp.setProgress(selectedElement[0].comp.progress);
                     } else {
-                        selectedElement.element.style.setProperty(p.name, `${v}${(p.name == 'width' || p.name == 'height') ? 'px' : ''}`);
+                        selectedElement[0].element.style.setProperty(p.name, `${v}${(p.name == 'width' || p.name == 'height') ? 'px' : ''}`);
                     }
                 }
                 switch (p.name) {
                     case 'name':
-                        selectedElement.comp.name = p.element.value;
-                        p.element.placeholder = selectedElement.comp.name;
+                        selectedElement[0].comp.name = p.element.value;
+                        p.element.placeholder = selectedElement[0].comp.name;
                         break;
                     case 'color':
                         let values = c.element.style.color.replace("rgb", '').replace('(', '').replace(")", '').split(",");
@@ -848,5 +968,53 @@ dragdrop.addEventListener("click", (e) => {
         selectedElement.forEach(d => d.comp.deselect());
         selectedElement = [];
         removeAll();
+        mEvent.fire("selectedElementChange", true, selectedElement);
     }
 })
+
+mEvent.receive('selectedElementChange', () => {
+    console.log('Selected:', selectedElement);
+    if (selectedElement.length > 1) {
+        // Allow grouping and ungrouping
+        document.getElementById("group").classList.remove("disabled");
+        document.getElementById("ungroup").classList.remove("disabled");
+    } else {
+        let cl = Array.from(document.getElementById("group").classList);
+        if (cl.includes('disabled')) return;
+        document.getElementById("group").classList.add("disabled");
+        document.getElementById("ungroup").classList.add("disabled");
+    }
+})
+
+
+
+
+
+
+window.api.on("group", async () => {
+    console.log('SelectedElement:', selectedElement);
+    if (selectedElement.length <= 1) return;
+    for (let e of selectedElement) {
+        if (e.comp.group) {
+            e.comp.group.removeComponent(e.comp);
+            if (e.comp.group.isEmpty()) {
+                await e.comp.group.destroy();
+            }
+        }
+    }
+    let g = new Group();
+    for (let e of selectedElement) {
+        e.comp.setGroup(g);
+    }
+})
+
+window.api.on("ungroup", () => {
+    if (selectedElement.length <= 1) return;
+    for (let e of selectedElement) {
+        if (e.comp.group) {
+            e.comp.group.removeComponent(e.comp);
+        }
+        e.comp.group.destroy()
+        e.comp.setGroup(new Group());
+    }
+}) 
