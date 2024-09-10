@@ -15,9 +15,12 @@ async function build() {
         ],
         buttonLabel: "Build Win Project"
     });
+
+    // Generate temporary directory for building process : TODO
+
     return new Promise((resolve) => {
         if (canceled) resolve('Packaging failed: Build process cancelled');
-        electronPackager('.', {
+        electronPackager('.', { // MODIFY THIS: Build path will be a temporary file created for the purpose of building
             platform: 'win32',
             arch: 'x64',
             out: 'packaged_files',
