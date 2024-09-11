@@ -92,8 +92,7 @@ const indexjs = `class GraphicsWindow {
         });
 
         // Set the window icon
-        //const iconPath = path.join(__dirname, './images/icon.png');
-        //this.window.setIcon(iconPath);
+        //(REPLACE)
 
         const menu = Menu.buildFromTemplate([]);
         Menu.setApplicationMenu(menu);
@@ -226,6 +225,10 @@ async function build() {
     </html>`
 
 
+    let iconPath = await util.promisify(fs.read)('./icon.txt');
+    fs.copyFile(`./dist/stored_images/${iconPath}`, `./temp/${formattedDate}/${iconPath}`, (err) => { });
+    indexjs = indexjs.replace("//(REPLACE)", `const iconPath = path.join(__dirname, './${iconPath}');
+        this.window.setIcon(iconPath);`)
     fs.writeFile(`./temp/${formattedDate}/html/index.html`, _html, (err) => { });
     fs.writeFile(`./temp/${formattedDate}/css/index.css`, recompileCSS(css), (err) => { });
     fs.writeFile(`./temp/${formattedDate}/index.js`, indexjs, (err) => { });

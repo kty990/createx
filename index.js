@@ -388,12 +388,21 @@ ipcMain.on("settings", () => {
     }
 })
 
-ipcMain.on("settings-action", (ev, data) => {
+async function getStoredFiles(directoryPath) {
+    let fileList = [];
+    let data = await util.promisify(fs.readdir)(directoryPath)
+    return data;
+}
 
+ipcMain.on("get_stored_files", async () => {
+    // Settings event
+    let tmp_files = await getStoredFiles('./dist/stored_images/');
+    console.log('Temp Files:', tmp_files);
+    settingsWindow.window.webContents.send("get_stored_files", tmp_files);
 })
 
 ipcMain.on("setIcon", (ev, iconPath) => {
-
+    fs.writeFile('./icon.txt', iconPath, () => { });
 })
 
 app.on('window-all-closed', () => {
