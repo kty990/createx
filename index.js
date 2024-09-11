@@ -1,4 +1,4 @@
-const { app, BrowserWindow, Menu, dialog, ipcMain, autoUpdater, shell } = require('electron');
+const { app, BrowserWindow, Menu, dialog, ipcMain, autoUpdater, shell, clipboard } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const util = require('util');
@@ -259,7 +259,6 @@ ipcMain.on("editComponent", (_, name, d) => {
 })
 ipcMain.on("createComponent", (event, component) => {
     components.push(component);
-    console.log("Component created.", component);
 })
 
 
@@ -386,6 +385,15 @@ ipcMain.on("settings", () => {
     } else {
         console.log("wtf");
     }
+})
+
+ipcMain.on("_copy", (ev, data) => {
+    clipboard.writeText(`${data}`);
+    graphicsWindow.window.webContents.send('_copy', `${clipboard.readText() == `${data}`}`);
+})
+
+ipcMain.on('getClipboard', () => {
+    graphicsWindow.window.webContents.send("getClipboard", clipboard.readText());
 })
 
 async function getStoredFiles(directoryPath) {

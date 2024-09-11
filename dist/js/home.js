@@ -994,7 +994,47 @@ mEvent.receive('selectedElementChange', () => {
 
 
 
+window.api.on("cut", async () => {
+    // Get current selected element
+    // Store the element as a JSON string
+    let data = [];
+    for (let e of selectedElement) {
+        let tmp = e.comp.group;
+        e.comp.group = tmp.id;
+        data.push(JSON.stringify(e.comp));
+        e.comp.group = tmp;
+    }
+    // Store the element string to keyboard (window.api.send)
+    let result = await window.api.invoke("_copy", data);
+    console.warn(result);
+    // Delete element from drag-drop and from local memory
+    for (let e of selectedElement) {
+        e.element.remove();
+    }
+    selectedElement = [];
+})
 
+window.api.on("copy", async () => {
+    // Get current selected element
+    // Store the element as a JSON string
+    let data = [];
+    for (let e of selectedElement) {
+        let tmp = e.comp.group;
+        e.comp.group = tmp.id;
+        data.push(JSON.stringify(e.comp));
+        e.comp.group = tmp;
+    }
+    // Store the element string to keyboard (window.api.send)
+    let result = await window.api.invoke("_copy", data);
+    console.warn(result);
+})
+
+window.api.on("paste", async () => {
+    // Check if the keyboard contains a valid component in format JSON string
+    // Load component from keyboard
+    let data = await window.api.invoke("getClipboard");
+    console.warn(data);
+})
 
 
 window.api.on("group", async () => {

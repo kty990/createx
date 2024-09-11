@@ -44,7 +44,7 @@ window.api.on("save", () => {
 window.api.on("build", () => {
     // Display open file window to get path
     // Build application from file
-    const status = window.api.invoke("build");
+    const status = window.api.invoke("buildFile");
     console.warn('Build Status:', status);
     // Display notification for status of build, or open popup to display messages as build is running / completed
 })
@@ -64,24 +64,8 @@ window.api.on("upload", () => {
 
 /*** EDIT ***/
 
-// cut,copy,paste
-window.api.on("cut", () => {
-    // Get current selected element
-    // Store the element as a JSON string
-    // Store the element string to keyboard (window.api.send)
-    // Delete element from drag-drop and from local memory
-})
+// cut,copy,paste handled in home.js
 
-window.api.on("copy", () => {
-    // Get current selected element
-    // Store the element as a JSON string
-    // Store the element string to keyboard (window.api.send)
-})
-
-window.api.on("paste", () => {
-    // Check if the keyboard contains a valid component in format JSON string
-    // Load component from keyboard
-})
 
 
 
