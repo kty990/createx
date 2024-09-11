@@ -1,1 +1,1 @@
-echo_img0.png
+icon.png
