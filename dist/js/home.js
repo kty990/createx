@@ -153,7 +153,7 @@ class Component {
         }
         this.element = null;
         this.onPropertyChange = (name, value) => {
-            console.log(`====== Property Change ======\nName: ${name}\nValue: ${value}\n`);
+            console.log(`====== Property Change ======\nName: ${name}\nValue:`, value, `\n`);
         };
         this.onSetElement = onSetElement;
         this.properties = {
@@ -264,10 +264,10 @@ class Component {
         return tmp;
     }
 
-    createElement(callback) {
-        let e = document.createElement("div");
-        e.style.width = this.size.width + "px";
-        e.style.height = this.size.height + "px";
+    createElement(callback = () => { }) {
+        let e = document.createElement(this.properties.type || "div");
+        e.style.width = this.properties.width + "px";
+        e.style.height = this.properties.height + "px";
         e.addEventListener("click", callback);
         this.element = e;
         return e;
@@ -1001,11 +1001,12 @@ window.api.on("cut", async () => {
     for (let e of selectedElement) {
         let tmp = e.comp.group;
         e.comp.group = tmp.id;
+        e.comp.typeof = e.comp.constructor.name;
         data.push(JSON.stringify(e.comp));
         e.comp.group = tmp;
     }
     // Store the element string to keyboard (window.api.send)
-    let result = await window.api.invoke("_copy", data);
+    let result = await window.api.invoke("_copy", data.join("(SPLIT)"));
     console.warn(result);
     // Delete element from drag-drop and from local memory
     for (let e of selectedElement) {
@@ -1021,19 +1022,37 @@ window.api.on("copy", async () => {
     for (let e of selectedElement) {
         let tmp = e.comp.group;
         e.comp.group = tmp.id;
-        data.push(JSON.stringify(e.comp));
+        e.comp.typeof = e.comp.constructor.name;
+        data.push(JSON.stringify(e.comp, null, 2));
         e.comp.group = tmp;
     }
     // Store the element string to keyboard (window.api.send)
-    let result = await window.api.invoke("_copy", data);
+    let result = await window.api.invoke("_copy", data.join("(SPLIT)"));
     console.warn(result);
 })
 
 window.api.on("paste", async () => {
-    // Check if the keyboard contains a valid component in format JSON string
-    // Load component from keyboard
+    // TODO: Handle groups and then handle adding to dragdrop
     let data = await window.api.invoke("getClipboard");
-    console.warn(data);
+    let groups = {};
+    let comps = data.split("(SPLIT)");
+    console.warn(comps);
+    comps.forEach(c => {
+        let obj = JSON.parse(c);
+        let c_obj = new registry[obj.typeof](null); // Null parent
+        console.log(c_obj, 1);
+        c_obj.setElement(c_obj.createElement());
+        console.log(c_obj, 2);
+        for (const [key, value] of Object.entries(obj)) {
+            if (key == 'properties') {
+                c_obj.properties = value;
+            } else {
+                c_obj.setProperty(key, value, null); // Name, Value, Property <Class>
+            }
+        }
+        c_obj.preview = c_obj.properties;
+        console.log(c_obj, 3);
+    })
 })
 
 
