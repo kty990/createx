@@ -7,3 +7,10 @@ xx.addEventListener("click", () => {
 minimize.addEventListener("click", () => {
     window.api.send("minimize_settings");
 })
+
+
+const iconInput = document.getElementsByClassName("iconinput")[0];
+
+iconInput.addEventListener("click", () => {
+    // TODO: Handle showing only stored images
+})

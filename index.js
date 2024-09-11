@@ -9,7 +9,7 @@ var currentFile;
 var settingsWindow = null;
 
 fs.readFile("./license.md", (err, data) => {
-    licenseData = data;
+    licenseData = data; 0
 })
 
 let devToolsOpened = false;
@@ -180,7 +180,7 @@ async function exportProject() {
 
     let result = allComps.join("\n");
 
-    result += `\n(LICENSE): ${licenseData}`;
+    result += `\n(LICENSE): ${licenseData}\n(ICON): ${icon}`;
 
     let path = filePath;
     if (!path.endsWith(".amk")) {
@@ -389,6 +389,10 @@ ipcMain.on("settings", () => {
 })
 
 ipcMain.on("settings-action", (ev, data) => {
+
+})
+
+ipcMain.on("setIcon", (ev, iconPath) => {
 
 })
 
