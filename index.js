@@ -272,21 +272,17 @@ ipcMain.on("newJSFile", () => {
 
 ipcMain.on("close", () => {
     graphicsWindow.window.close();
-    console.log("close")
 })
 
 ipcMain.on("minimize", () => {
     graphicsWindow.window.minimize();
-    console.log("minimize");
 })
 
 ipcMain.on("close_settings", () => {
-    console.log("close_settings");
     settingsWindow.window.close();
 })
 
 ipcMain.on("minimize_settings", () => {
-    console.log("minimize_settings");
     settingsWindow.window.minimize();
 })
 
@@ -384,7 +380,7 @@ ipcMain.on("settings", () => {
     if (settingsWindow == null) {
         settingsWindow = new GraphicsWindow('./dist/html/settings.html');
         settingsWindow.createWindow('./dist/html/settings.html', 400, 1000, true);
-        settingsWindow.window.on('closed', () => {
+        settingsWindow.window.once('closed', () => {
             settingsWindow = null;
         });
     } else {

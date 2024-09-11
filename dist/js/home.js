@@ -143,8 +143,10 @@ class Group {
 }
 
 class Component {
+    static ID = 0;
     constructor(name, parent, group = undefined, onSetElement = () => { }) {
         this.name = name;
+        this.id = ++Component.ID;
         this.parent = parent;
         if (group != undefined && group != null) {
             this.group = group;
@@ -825,17 +827,19 @@ for (let component of library) {
             })
 
             let down = false;
-            let offset = {
-                x: 0,
-                y: 0
-            }
+            let offsets = {};
 
             document.addEventListener("mousedown", (e) => {
                 // Set up for dragging
                 if (e.target != tmp) return;
                 down = true;
-                offset.x = Math.abs(parseInt(`${tmp.style.left}`.replace('px', '')) - e.clientX);
-                offset.y = Math.abs(parseInt(`${tmp.style.top}`.replace('px', '')) - e.clientY);
+                offsets = {};
+                for (let comp of c.group.components) {
+                    let offset = {};
+                    offset.x = Math.abs(parseInt(`${comp.element.style.left}`.replace('px', '')) - e.clientX); // TODO: Change to relative offset of tmp instead of abs offset
+                    offset.y = Math.abs(parseInt(`${comp.element.style.top}`.replace('px', '')) - e.clientY);
+                    offsets[`${comp.id}`] = offset;
+                }
             })
 
             document.addEventListener("mouseup", (e) => {
@@ -844,20 +848,23 @@ for (let component of library) {
                 }
                 down = false;
                 let rect = dragdrop.getBoundingClientRect();
-                const x = e.clientX - offset.x
-                const y = e.clientY - offset.y;
-                tmp.style.left = `${x}px`;
-                tmp.style.top = `${y}px`;
-                console.log(`Down changed to: ${down}`)
+                for (let comp of c.group.components) {
+                    let x = e.clientX - offsets[`${comp.id}`].x;
+                    let y = e.clientY - offsets[`${comp.id}`].y;
+                    comp.element.style.left = `${x}px`;
+                    comp.element.style.top = `${y}px`;
+                }
             })
 
             document.addEventListener("mousemove", (e) => {
                 if (down) {
                     console.log('Moving');
-                    const x = e.clientX - offset.x
-                    const y = e.clientY - offset.y;
-                    tmp.style.left = `${x}px`;
-                    tmp.style.top = `${y}px`;
+                    for (let comp of c.group.components) {
+                        let x = e.clientX - offsets[`${comp.id}`].x;
+                        let y = e.clientY - offsets[`${comp.id}`].y;
+                        comp.element.style.left = `${x}px`;
+                        comp.element.style.top = `${y}px`;
+                    }
                 }
             })
 
