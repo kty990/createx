@@ -1052,7 +1052,11 @@ window.api.on("paste", async () => {
         console.log(c_obj, 2);
         for (const [key, value] of Object.entries(obj)) {
             if (key == 'properties') {
-                c_obj.properties = value;
+                for (const [p, v] of Object.entries(value)) {
+                    c_obj.setProperty(p, v);
+                }
+            } else if (key == 'group') {
+                c_obj.group = value;
             } else {
                 c_obj.setProperty(key, value, null); // Name, Value, Property <Class>
             }
@@ -1060,12 +1064,15 @@ window.api.on("paste", async () => {
         c_obj.preview = c_obj.properties;
 
         // Handle grouping
+        console.error(`${c_obj.group}`, groups[`${c_obj.group}`]);
         if (groups[`${c_obj.group}`] == undefined) {
             groups[`${c_obj.group}`] = new Group();
         }
         c_obj.group = groups[`${c_obj.group}`];
         c_obj.group.addComponent(c_obj);
         myComps.push(c_obj);
+
+        console.error(`MY GROUP: ${c_obj.group}`, groups[`${c_obj.group}`]);
 
         console.log(c_obj, 3);
     }
