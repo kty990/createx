@@ -1,5 +1,6 @@
 import * as heirarcy from './heirarchy.js';
 import * as dropdown from './dropdown.js';
+import { Notification } from './notifications.js'
 
 const dragdropComponents = []
 let displayedProperties = [];
@@ -137,7 +138,11 @@ class Group {
     removeComponent(component) {
         try {
             this.components.splice(this.components.indexOf(component), 1);
-            this.root.root.removeNest(component.nestLevel, component)
+            this.root.root.removeNest(component.nestLevel, component);
+            this.root.root.refresh();
+            if (this.isEmpty()) {
+                this.destroy();
+            }
         } catch (_) { }
     }
 }
@@ -309,12 +314,6 @@ class Component {
             if (this.selected) return;
             this.element.style.outline = 'unset';
         })
-
-
-
-
-
-
 
 
         this.element.addEventListener("click", (e) => {
@@ -998,14 +997,17 @@ mEvent.receive('selectedElementChange', () => {
     }
 })
 
-
-
-window.api.on("cut", async () => {
+async function cut() {
     // Get current selected element
     // Store the element as a JSON string
+    if (selectedElement.length == 0) {
+        new Notification(`Cut`, `${selectedElement.length} elements copied to clipboard`);
+        return;
+    }
     let data = [];
     for (let e of selectedElement) {
         let tmp = e.comp.group;
+        e.comp.group.removeComponent(e.comp);
         e.comp.group = tmp.id;
         e.comp.typeof = e.comp.constructor.name;
         data.push(JSON.stringify(e.comp));
@@ -1018,12 +1020,17 @@ window.api.on("cut", async () => {
     for (let e of selectedElement) {
         e.element.remove();
     }
+    new Notification(`Cut`, `${selectedElement.length} elements copied to clipboard`);
     selectedElement = [];
-})
+}
 
-window.api.on("copy", async () => {
+async function copy() {
     // Get current selected element
     // Store the element as a JSON string
+    if (selectedElement.length == 0) {
+        new Notification(`Copy`, `${selectedElement.length} elements copied to clipboard`);
+        return;
+    }
     let data = [];
     for (let e of selectedElement) {
         let tmp = e.comp.group;
@@ -1035,9 +1042,10 @@ window.api.on("copy", async () => {
     // Store the element string to keyboard (window.api.send)
     let result = await window.api.invoke("_copy", data.join("(SPLIT)"));
     console.warn(result);
-})
+    new Notification(`Copy`, `${selectedElement.length} elements copied to clipboard`);
+}
 
-window.api.on("paste", async () => {
+async function paste() {
     // TODO: Handle groups and then handle adding to dragdrop
     let data = await window.api.invoke("getClipboard");
     let groups = {};
@@ -1064,17 +1072,12 @@ window.api.on("paste", async () => {
         c_obj.preview = c_obj.properties;
 
         // Handle grouping
-        console.error(`${c_obj.group}`, groups[`${c_obj.group}`]);
         if (groups[`${c_obj.group}`] == undefined) {
             groups[`${c_obj.group}`] = new Group();
         }
         c_obj.group = groups[`${c_obj.group}`];
         c_obj.group.addComponent(c_obj);
         myComps.push(c_obj);
-
-        console.error(`MY GROUP: ${c_obj.group}`, groups[`${c_obj.group}`]);
-
-        console.log(c_obj, 3);
     }
 
     // Handle display
@@ -1087,7 +1090,23 @@ window.api.on("paste", async () => {
         c.select();
     }
 
-})
+    new Notification(`Paste`, `${myComps.map(c => c.constructor.name).join(", ")} pasted from clipboard`);
+}
+
+window.api.on("cut", cut)
+document.addEventListener("keydown", (ev) => {
+    if (ev.ctrlKey && ev.key.toLowerCase() === "x") {
+        cut();
+    } else if (ev.ctrlKey && ev.key.toLowerCase() == "c") {
+        copy();
+    } else if (ev.ctrlKey && ev.key.toLowerCase() == "v") {
+        paste()
+    }
+});
+
+window.api.on("copy", copy)
+
+window.api.on("paste", paste)
 
 
 window.api.on("group", async () => {
