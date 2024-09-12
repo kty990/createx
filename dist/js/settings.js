@@ -12,5 +12,8 @@ minimize.addEventListener("click", () => {
 const iconInput = document.getElementsByClassName("iconinput")[0];
 
 iconInput.addEventListener("click", () => {
-    // TODO: Handle showing only stored images
+    let desc = document.createElement("div");
+    desc.classList.add("description");
+    let p = document.createElement("p");
+    p.textContent =
 })
