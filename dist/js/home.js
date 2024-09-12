@@ -48,6 +48,14 @@ class Event {
         this.callbacks[channel].push(cb);
     }
 
+    once(channel, cb) {
+        const r = (...args) => {
+            _action.removeCallback(channel, r);
+            cb(...args);
+        }
+        _action.receive(channel, r);
+    }
+
     invoke(channel) {
         return new Promise((resolve) => {
             const r = (...args) => {
@@ -149,7 +157,8 @@ class Group {
 
 class Component {
     static ID = 0;
-    constructor(name, parent, group = undefined, onSetElement = () => { }) {
+    elementEvent = new Event();
+    constructor(name, parent, group = undefined) {
         this.name = name;
         this.id = ++Component.ID;
         this.parent = parent;
@@ -160,7 +169,6 @@ class Component {
         this.onPropertyChange = (name, value) => {
             console.log(`====== ${this.constructor.name} Property Change ======\nName: ${name}\nValue:`, value, `\n`);
         };
-        this.onSetElement = onSetElement;
         this.properties = {
             color: "#fff",
             background: "#000",
@@ -227,7 +235,7 @@ class Component {
             }
         }
         // console.log('Setting:', setting);
-        this.onSetElement(e);
+        this.elementEvent.fire('set', true, e);
         let myProperties = this.properties;
         myProperties.name = this.name;
         window.api.send("createComponent", myProperties);
@@ -538,27 +546,22 @@ class DropdownMenu extends Component {
         this.dropdowns = 0;
         this.selections = dropdownSelections;
 
-    }
+        this.elementEvent.once("set", (element) => {
+            let tmp = document.createElement('div');
+            tmp.style.display = 'flex';
+            tmp.style.flexDirection = 'column';
+            tmp.style.width = 'fit-content';
+            tmp.style.maxWidth = '100%';
+            tmp.style.position = 'absolute';
+            tmp.style.top = '100%';
+            tmp.style.left = '0';
+            tmp.style.visibility = 'hidden';
+            this.main = tmp;
+            element.appendChild(this.main);
+            let properties = this.properties;
+            properties.name = this.name;
+        })
 
-    setElement(element) {
-        this.element = element;
-        let tmp = document.createElement('div');
-        tmp.style.display = 'flex';
-        tmp.style.flexDirection = 'column';
-        tmp.style.width = 'fit-content';
-        tmp.style.maxWidth = '100%';
-        tmp.style.position = 'absolute';
-        tmp.style.top = '100%';
-        tmp.style.left = '0';
-        tmp.style.visibility = 'hidden';
-        this.main = tmp;
-        this.element.appendChild(this.main);
-        // console.log(this.main);
-        // console.log("this.main @super^")
-        let properties = this.properties;
-        properties.name = this.name;
-        window.api.send("createComponent", properties);
-        return this.element;
     }
 
     activate() {
@@ -788,6 +791,7 @@ const library = [
     new Input(null, 'null')
 ]
 
+// Main logic
 for (let component of library) {
     let preview = component.preview;
     let comp = document.createElement("div");
@@ -1094,6 +1098,11 @@ async function paste() {
 }
 
 window.api.on("cut", cut)
+
+window.api.on("copy", copy)
+
+window.api.on("paste", paste)
+
 document.addEventListener("keydown", (ev) => {
     if (ev.ctrlKey && ev.key.toLowerCase() === "x") {
         cut();
@@ -1103,11 +1112,6 @@ document.addEventListener("keydown", (ev) => {
         paste()
     }
 });
-
-window.api.on("copy", copy)
-
-window.api.on("paste", paste)
-
 
 window.api.on("group", async () => {
     console.log('SelectedElement:', selectedElement);
@@ -1125,7 +1129,6 @@ window.api.on("group", async () => {
         e.comp.setGroup(g);
     }
 })
-
 
 // Fix the group numbering when ungrouping : TODO
 window.api.on("ungroup", () => {
