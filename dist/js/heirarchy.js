@@ -76,7 +76,6 @@ class hRoot {
                 if (ch.indexOf(e.element) != -1) continue;
                 e.parent.element.appendChild(e.element);
             }
-            console.error('Displaying for refresh:', this.nests[level]);
         }
     }
 }

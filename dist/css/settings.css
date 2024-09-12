@@ -26,34 +26,6 @@
     align-items: center;
 }
 
-#descriptions {
-    position: fixed;
-    width: 50vw;
-    height: calc(100vh - 30px);
-    top: calc(30px);
-    left: 50vw;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background-color: var(--function);
-}
-
-.description {
-    width: 80%;
-    height: fit-content;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-
-}
-
-.description>p {
-    color: var(--text);
-    text-align: center;
-}
-
 .category {
     max-width: 80%;
     width: fit-content;

@@ -1,5 +1,6 @@
 import * as heirarcy from './heirarchy.js';
 import * as dropdown from './dropdown.js';
+import { Notification } from './notifications.js'
 
 const dragdropComponents = []
 let displayedProperties = [];
@@ -45,6 +46,14 @@ class Event {
             this.callbacks[channel] = [];
         }
         this.callbacks[channel].push(cb);
+    }
+
+    once(channel, cb) {
+        const r = (...args) => {
+            _action.removeCallback(channel, r);
+            cb(...args);
+        }
+        _action.receive(channel, r);
     }
 
     invoke(channel) {
@@ -137,14 +146,19 @@ class Group {
     removeComponent(component) {
         try {
             this.components.splice(this.components.indexOf(component), 1);
-            this.root.root.removeNest(component.nestLevel, component)
+            this.root.root.removeNest(component.nestLevel, component);
+            this.root.root.refresh();
+            if (this.isEmpty()) {
+                this.destroy();
+            }
         } catch (_) { }
     }
 }
 
 class Component {
     static ID = 0;
-    constructor(name, parent, group = undefined, onSetElement = () => { }) {
+    elementEvent = new Event();
+    constructor(name, parent, group = undefined) {
         this.name = name;
         this.id = ++Component.ID;
         this.parent = parent;
@@ -153,9 +167,8 @@ class Component {
         }
         this.element = null;
         this.onPropertyChange = (name, value) => {
-            console.log(`====== Property Change ======\nName: ${name}\nValue: ${value}\n`);
+            console.log(`====== ${this.constructor.name} Property Change ======\nName: ${name}\nValue:`, value, `\n`);
         };
-        this.onSetElement = onSetElement;
         this.properties = {
             color: "#fff",
             background: "#000",
@@ -212,6 +225,7 @@ class Component {
         this.element = e;
         // this.setProperty('position', 'absolute', null);
         this.setProperty('overflow', 'hidden', null);
+        this.setProperty('position', 'fixed');
         let setting = "";
         for (const [key, value] of Object.entries(this.element.style)) {
             if (this.properties[key]) {
@@ -221,10 +235,10 @@ class Component {
             }
         }
         // console.log('Setting:', setting);
-        this.onSetElement(e);
-        let properties = this.properties;
-        properties.name = this.name;
-        window.api.send("createComponent", properties);
+        this.elementEvent.fire('set', true, e);
+        let myProperties = this.properties;
+        myProperties.name = this.name;
+        window.api.send("createComponent", myProperties);
         // console.log("Create component", this.name);
         this.element.addEventListener("mouseenter", () => {
             for (const [key, value] of Object.entries(this.properties)) {
@@ -253,6 +267,125 @@ class Component {
                 this.setProgress(this.progress);
             }
         })
+
+        let down = false;
+        let offsets = {};
+
+        document.addEventListener("mousedown", (e) => {
+            // Set up for dragging
+            if (e.target != this.element) return;
+            down = true;
+            offsets = {};
+            console.log(`Down: ${this.group.components.length}`, this.group);
+            for (let comp of this.group.components) {
+                let offset = {};
+                offset.x = Math.abs(parseInt(`${comp.properties.left}`.replace('px', '')) - e.clientX); // TODO: Change to relative offset of tmp instead of abs offset
+                offset.y = Math.abs(parseInt(`${comp.properties.top}`.replace('px', '')) - e.clientY);
+                offsets[`${comp.id}`] = offset;
+            }
+            console.warn(offsets);
+        })
+
+        document.addEventListener("mouseup", (e) => {
+            if (!down) {
+                return;
+            }
+            down = false;
+            for (let comp of this.group.components) {
+                let x = e.clientX - offsets[`${comp.id}`].x;
+                let y = e.clientY - offsets[`${comp.id}`].y;
+                comp.setProperty('left', `${x}px`);
+                comp.setProperty('top', `${y}px`);
+            }
+        })
+
+        document.addEventListener("mousemove", (e) => {
+            if (down) {
+                console.log('Moving');
+                for (let comp of this.group.components) {
+                    let x = e.clientX - offsets[`${comp.id}`].x;
+                    let y = e.clientY - offsets[`${comp.id}`].y;
+                    comp.setProperty('left', `${x}px`);
+                    comp.setProperty('top', `${y}px`);
+                }
+            } else if (e.target == this.element) {
+                console.log("NOPE");
+            }
+        })
+        this.element.addEventListener("mouseenter", () => {
+            if (this.selected) return;
+            this.element.style.outline = "solid";
+            this.element.style.outlineColor = "var(--body)";
+        })
+
+        this.element.addEventListener("mouseleave", () => {
+            if (this.selected) return;
+            this.element.style.outline = 'unset';
+        })
+
+
+        this.element.addEventListener("click", (e) => {
+            removeAll();
+            if (e.shiftKey) {
+                if (selectedElement.indexOf({ comp: this, element: this.element }) != -1) return;
+                selectedElement.push({ comp: this, element: this.element })
+                this.select(true);
+                return;
+            }
+            if (selectedElement.length != 0) selectedElement.forEach(d => d.comp.deselect());
+            selectedElement = [{ comp: this, element: this.element }];
+            this.select(false);
+            displayedProperties = [];
+            for (const [name, p] of Object.entries(properties)) {
+                if (p.isAllowed(getTypeOf(this))) {
+                    let property = p.createElement();
+                    p.activate();
+                    displayedProperties.push({ name: name, element: this.element, type: p.constructor.name.toLowerCase(), property: p });
+                    switch (name) {
+                        case 'name':
+                            property.querySelector("input").placeholder = this.name;
+                            break;
+                        case 'color':
+                            let values = this.element.style.color.replace("rgb", '').replace('(', '').replace(")", '').split(",");
+                            let hex = rgbToHex(values[0], values[1], values[2]);
+                            property.querySelector("input").value = hex;
+                            break;
+                        case 'backgroundColor':
+                            property.querySelector("input").value = this.properties.backgroundColor || this.element.style.background || "#f00";
+                            break;
+                        case 'textContent':
+                            property.querySelector('input').placeholder = this.element.textContent;
+                            break;
+                        case 'x':
+                            property.querySelector("input").placeholder = parseInt(this.properties.left.replace('px', ''));
+                            break;
+                        case 'y':
+                            property.querySelector("input").placeholder = parseInt(this.properties.top.replace('px', ''));
+                            break;
+                        case 'width':
+                            property.querySelector("input").placeholder = parseInt(this.properties.width.replace('px', ''));
+                            break;
+                        case 'height':
+                            property.querySelector("input").placeholder = parseInt(this.properties.height.replace('px', ''));
+                        case 'progress':
+                            property.querySelector("input").placeholder = selectedElement[0].comp.progress;
+                            break;
+                        case 'src_file':
+                            property.querySelector("input").placeholder = selectedElement[0].comp.properties.src || "src";
+                        case 'src_text':
+                            property.querySelector("input").placeholder = selectedElement[0].comp.properties.src || "src";;
+
+                    }
+                    if (selectedElement[0].comp instanceof ProgressBar && (name == 'background_color')) {
+                        console.log("YES");
+                        property.querySelector("input").value = selectedElement[0].comp.background;
+                    }
+                    directory.appendChild(property);
+                }
+            }
+            console.log(displayedProperties);
+            compType.textContent = `${getTypeOf(this)}`;
+        })
     }
 
     copy() {
@@ -264,10 +397,10 @@ class Component {
         return tmp;
     }
 
-    createElement(callback) {
-        let e = document.createElement("div");
-        e.style.width = this.size.width + "px";
-        e.style.height = this.size.height + "px";
+    createElement(callback = () => { }) {
+        let e = document.createElement(this.properties.type || "div");
+        e.style.width = this.properties.width + "px";
+        e.style.height = this.properties.height + "px";
         e.addEventListener("click", callback);
         this.element = e;
         return e;
@@ -413,27 +546,22 @@ class DropdownMenu extends Component {
         this.dropdowns = 0;
         this.selections = dropdownSelections;
 
-    }
+        this.elementEvent.once("set", (element) => {
+            let tmp = document.createElement('div');
+            tmp.style.display = 'flex';
+            tmp.style.flexDirection = 'column';
+            tmp.style.width = 'fit-content';
+            tmp.style.maxWidth = '100%';
+            tmp.style.position = 'absolute';
+            tmp.style.top = '100%';
+            tmp.style.left = '0';
+            tmp.style.visibility = 'hidden';
+            this.main = tmp;
+            element.appendChild(this.main);
+            let properties = this.properties;
+            properties.name = this.name;
+        })
 
-    setElement(element) {
-        this.element = element;
-        let tmp = document.createElement('div');
-        tmp.style.display = 'flex';
-        tmp.style.flexDirection = 'column';
-        tmp.style.width = 'fit-content';
-        tmp.style.maxWidth = '100%';
-        tmp.style.position = 'absolute';
-        tmp.style.top = '100%';
-        tmp.style.left = '0';
-        tmp.style.visibility = 'hidden';
-        this.main = tmp;
-        this.element.appendChild(this.main);
-        // console.log(this.main);
-        // console.log("this.main @super^")
-        let properties = this.properties;
-        properties.name = this.name;
-        window.api.send("createComponent", properties);
-        return this.element;
     }
 
     activate() {
@@ -663,8 +791,7 @@ const library = [
     new Input(null, 'null')
 ]
 
-
-
+// Main logic
 for (let component of library) {
     let preview = component.preview;
     let comp = document.createElement("div");
@@ -762,124 +889,6 @@ for (let component of library) {
                 c.activate();
                 console.warn("Activated");
             }
-
-            tmp.addEventListener("click", (e) => {
-                removeAll();
-                if (e.shiftKey) {
-                    if (selectedElement.indexOf({ comp: c, element: tmp }) != -1) return;
-                    selectedElement.push({ comp: c, element: tmp })
-                    c.select(true);
-                    return;
-                }
-                if (selectedElement.length != 0) selectedElement.forEach(d => d.comp.deselect());
-                selectedElement = [{ comp: c, element: tmp }];
-                c.select(false);
-                displayedProperties = [];
-                for (const [name, p] of Object.entries(properties)) {
-                    if (p.isAllowed(getTypeOf(c))) {
-                        let property = p.createElement();
-                        p.activate();
-                        displayedProperties.push({ name: name, element: tmp, type: p.constructor.name.toLowerCase(), property: p });
-                        switch (name) {
-                            case 'name':
-                                property.querySelector("input").placeholder = c.name;
-                                break;
-                            case 'color':
-                                let values = c.element.style.color.replace("rgb", '').replace('(', '').replace(")", '').split(",");
-                                let hex = rgbToHex(values[0], values[1], values[2]);
-                                property.querySelector("input").value = hex;
-                                break;
-                            case 'backgroundColor':
-                                property.querySelector("input").value = c.properties.backgroundColor || c.element.style.background || "#f00";
-                                break;
-                            case 'textContent':
-                                property.querySelector('input').placeholder = c.element.textContent;
-                                break;
-                            case 'x':
-                                property.querySelector("input").placeholder = parseInt(c.properties.left.replace('px', ''));
-                                break;
-                            case 'y':
-                                property.querySelector("input").placeholder = parseInt(c.properties.top.replace('px', ''));
-                                break;
-                            case 'width':
-                                property.querySelector("input").placeholder = parseInt(c.properties.width.replace('px', ''));
-                                break;
-                            case 'height':
-                                property.querySelector("input").placeholder = parseInt(c.properties.height.replace('px', ''));
-                            case 'progress':
-                                property.querySelector("input").placeholder = selectedElement[0].comp.progress;
-                                break;
-                            case 'src_file':
-                                property.querySelector("input").placeholder = selectedElement[0].comp.properties.src || "src";
-                            case 'src_text':
-                                property.querySelector("input").placeholder = selectedElement[0].comp.properties.src || "src";;
-
-                        }
-                        if (selectedElement[0].comp instanceof ProgressBar && (name == 'background_color')) {
-                            console.log("YES");
-                            property.querySelector("input").value = selectedElement[0].comp.background;
-                        }
-                        directory.appendChild(property);
-                    }
-                }
-                console.log(displayedProperties);
-                compType.textContent = `${getTypeOf(c)}`;
-            })
-
-            let down = false;
-            let offsets = {};
-
-            document.addEventListener("mousedown", (e) => {
-                // Set up for dragging
-                if (e.target != tmp) return;
-                down = true;
-                offsets = {};
-                for (let comp of c.group.components) {
-                    let offset = {};
-                    offset.x = Math.abs(parseInt(`${comp.element.style.left}`.replace('px', '')) - e.clientX); // TODO: Change to relative offset of tmp instead of abs offset
-                    offset.y = Math.abs(parseInt(`${comp.element.style.top}`.replace('px', '')) - e.clientY);
-                    offsets[`${comp.id}`] = offset;
-                }
-            })
-
-            document.addEventListener("mouseup", (e) => {
-                if (!down) {
-                    return;
-                }
-                down = false;
-                let rect = dragdrop.getBoundingClientRect();
-                for (let comp of c.group.components) {
-                    let x = e.clientX - offsets[`${comp.id}`].x;
-                    let y = e.clientY - offsets[`${comp.id}`].y;
-                    comp.element.style.left = `${x}px`;
-                    comp.element.style.top = `${y}px`;
-                }
-            })
-
-            document.addEventListener("mousemove", (e) => {
-                if (down) {
-                    console.log('Moving');
-                    for (let comp of c.group.components) {
-                        let x = e.clientX - offsets[`${comp.id}`].x;
-                        let y = e.clientY - offsets[`${comp.id}`].y;
-                        comp.element.style.left = `${x}px`;
-                        comp.element.style.top = `${y}px`;
-                    }
-                }
-            })
-
-            tmp.addEventListener("mouseenter", () => {
-                if (c.selected) return;
-                tmp.style.outline = "solid";
-                tmp.style.outlineColor = "var(--body)";
-            })
-
-            tmp.addEventListener("mouseleave", () => {
-                if (c.selected) return;
-                tmp.style.outline = 'unset';
-            })
-
-
 
             dragdropComponents.push(c);
             dragdrop.appendChild(tmp);
@@ -992,10 +1001,117 @@ mEvent.receive('selectedElementChange', () => {
     }
 })
 
+async function cut() {
+    // Get current selected element
+    // Store the element as a JSON string
+    if (selectedElement.length == 0) {
+        new Notification(`Cut`, `${selectedElement.length} elements copied to clipboard`);
+        return;
+    }
+    let data = [];
+    for (let e of selectedElement) {
+        let tmp = e.comp.group;
+        e.comp.group.removeComponent(e.comp);
+        e.comp.group = tmp.id;
+        e.comp.typeof = e.comp.constructor.name;
+        data.push(JSON.stringify(e.comp));
+        e.comp.group = tmp;
+    }
+    // Store the element string to keyboard (window.api.send)
+    let result = await window.api.invoke("_copy", data.join("(SPLIT)"));
+    console.warn(result);
+    // Delete element from drag-drop and from local memory
+    for (let e of selectedElement) {
+        e.element.remove();
+    }
+    new Notification(`Cut`, `${selectedElement.length} elements copied to clipboard`);
+    selectedElement = [];
+}
 
+async function copy() {
+    // Get current selected element
+    // Store the element as a JSON string
+    if (selectedElement.length == 0) {
+        new Notification(`Copy`, `${selectedElement.length} elements copied to clipboard`);
+        return;
+    }
+    let data = [];
+    for (let e of selectedElement) {
+        let tmp = e.comp.group;
+        e.comp.group = tmp.id;
+        e.comp.typeof = e.comp.constructor.name;
+        data.push(JSON.stringify(e.comp, null, 2));
+        e.comp.group = tmp;
+    }
+    // Store the element string to keyboard (window.api.send)
+    let result = await window.api.invoke("_copy", data.join("(SPLIT)"));
+    console.warn(result);
+    new Notification(`Copy`, `${selectedElement.length} elements copied to clipboard`);
+}
 
+async function paste() {
+    // TODO: Handle groups and then handle adding to dragdrop
+    let data = await window.api.invoke("getClipboard");
+    let groups = {};
+    let comps = data.split("(SPLIT)");
+    let myComps = [];
+    console.warn(comps);
+    for (let c of comps) {
+        let obj = JSON.parse(c);
+        let c_obj = new registry[obj.typeof](null); // Null parent
+        console.log(c_obj, 1);
+        c_obj.setElement(c_obj.createElement());
+        console.log(c_obj, 2);
+        for (const [key, value] of Object.entries(obj)) {
+            if (key == 'properties') {
+                for (const [p, v] of Object.entries(value)) {
+                    c_obj.setProperty(p, v);
+                }
+            } else if (key == 'group') {
+                c_obj.group = value;
+            } else {
+                c_obj.setProperty(key, value, null); // Name, Value, Property <Class>
+            }
+        }
+        c_obj.preview = c_obj.properties;
 
+        // Handle grouping
+        if (groups[`${c_obj.group}`] == undefined) {
+            groups[`${c_obj.group}`] = new Group();
+        }
+        c_obj.group = groups[`${c_obj.group}`];
+        c_obj.group.addComponent(c_obj);
+        myComps.push(c_obj);
+    }
 
+    // Handle display
+    selectedElement.forEach(e => e.comp.deselect());
+    selectedElement = [];
+
+    for (let c of myComps) {
+        selectedElement.push({ comp: c, element: c.element });
+        dragdrop.appendChild(c.element);
+        c.select();
+    }
+
+    new Notification(`Paste`, `${myComps.map(c => c.constructor.name).join(", ")} pasted from clipboard`);
+}
+
+window.api.on("cut", cut)
+
+window.api.on("copy", copy)
+
+window.api.on("paste", paste)
+
+document.addEventListener("keydown", (ev) => {
+    if (ev.ctrlKey && ev.key.toLowerCase() === "x") {
+        cut();
+    } else if (ev.ctrlKey && ev.key.toLowerCase() == "c") {
+        copy();
+    } else if (ev.ctrlKey && ev.key.toLowerCase() == "v") {
+        paste()
+    }
+});
 
 window.api.on("group", async () => {
     console.log('SelectedElement:', selectedElement);
@@ -1013,7 +1129,6 @@ window.api.on("group", async () => {
         e.comp.setGroup(g);
     }
 })
-
 
 // Fix the group numbering when ungrouping : TODO
 window.api.on("ungroup", () => {
