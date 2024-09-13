@@ -45,7 +45,7 @@ class Event {
             this.callbacks[channel] = [];
             return; // Nothing to remove in this instance
         }
-        this.callbacks[channel].splice(this.callbacks.indexOf(cb), 1);
+        this.callbacks[channel].splice(this.callbacks[channel].indexOf(cb), 1);
     }
 }
 
@@ -238,7 +238,7 @@ async function build() {
         fs.writeFile(`./temp/${formattedDate}/js/${file.name}.js`, data, (err) => { });
     }
 
-    return new Promise((resolve) => {
+    return new Promise(async (resolve) => {
         if (canceled) resolve('Packaging failed: Build process cancelled');
         let result = '<err>';
         electronPackager(`./temp/${formattedDate}`, {
@@ -246,11 +246,12 @@ async function build() {
             arch: 'x64',
             out: 'packaged_files',
             name: `${filePaths[0].split(".")[0]}`, // TODO: Change this to the value found in settings.json
-            version: '1.0.0', // This probably should have a dynamic component in the future
+            version: await ActionEvent.invoke('getversion'), // This probably should have a dynamic component in the future
             icon: `./temp/${formattedDate}/${iconPath}`,
+            description: await ActionEvent.invoke('getdescription'),
 
             win: {
-                manufacturer: 'Ty Kutcher'
+                manufacturer: await ActionEvent.invoke('getauthor')
             }
         })
             .then(() => {

@@ -110,6 +110,18 @@ ActionEvent.receive('get_icon', () => {
     ActionEvent.fire('get_icon', settings.icon);
 })
 
+ActionEvent.receive('getversion', () => {
+    ActionEvent.fire('getversion', settings.version);
+})
+
+ActionEvent.receive('getdescription', () => {
+    ActionEvent.fire('getdescription', settings.description);
+})
+
+ActionEvent.receive('getauthor', () => {
+    ActionEvent.fire('getauthor', settings.author);
+})
+
 async function exportProject() {
     // Get export destination
     const now = new Date();
@@ -384,7 +396,7 @@ ipcMain.on("settings", () => {
     // TODO: New window with settings to change for createx, not for created applications
     if (settingsWindow == null) {
         settingsWindow = new GraphicsWindow('./dist/html/settings.html');
-        settingsWindow.createWindow('./dist/html/settings.html', 400, 1000, true);
+        settingsWindow.createWindow('./dist/html/settings.html', 400, 800, true);
         settingsWindow.window.once('closed', () => {
             settingsWindow = null;
         });
@@ -415,14 +427,47 @@ ipcMain.on("get_stored_files", async () => {
     settingsWindow.window.webContents.send("get_stored_files", tmp_files);
 })
 
+function saveSettings() {
+    fs.writeFile('./settings.json', JSON.stringify(settings, null, 2), () => { })
+}
+
 ipcMain.on("setIcon", (ev, iconPath) => {
     settings.icon = iconPath;
-    fs.writeFile('./settings.json', JSON.stringify(settings, null, 2), () => { })
+    saveSettings();
 })
 
 ipcMain.on("setname", (ev, name) => {
     settings.name = name;
-    fs.writeFile('./settings.json', JSON.stringify(settings, null, 2), () => { })
+    saveSettings();
+})
+
+ipcMain.on("setversion", (ev, version) => {
+    settings.version = version;
+    saveSettings();
+})
+
+ipcMain.on("setdescription", (ev, description) => {
+    settings.description = description;
+    saveSettings();
+})
+
+ipcMain.on("setauthor", (ev, author) => {
+    settings.author = author;
+    saveSettings();
+})
+
+ipcMain.on("setallthemes", (ev, themes) => {
+    settings.themes = themes;
+    saveSettings();
+})
+
+ipcMain.on("settheme", (ev, theme) => {
+    settings.theme = theme;
+    saveSettings();
+})
+
+ipcMain.on("applyTheme", () => {
+    graphicsWindow.window.webContents.send("applyTheme");
 })
 
 ipcMain.on("getname", () => {
@@ -431,6 +476,34 @@ ipcMain.on("getname", () => {
 
 ipcMain.on("geticon", () => {
     settingsWindow.window.webContents.send("geticon", settings.icon);
+})
+
+ipcMain.on("getversion", () => {
+    settingsWindow.window.webContents.send("getversion", settings.version);
+})
+
+ipcMain.on("getdescription", () => {
+    settingsWindow.window.webContents.send("getdescription", settings.description);
+})
+
+ipcMain.on("getauthor", () => {
+    settingsWindow.window.webContents.send("getauthor", settings.author);
+})
+
+ipcMain.on("getallthemes", () => {
+    settingsWindow.window.webContents.send("getallthemes", settings.themes);
+})
+
+ipcMain.on("gettheme", () => {
+    settingsWindow.window.webContents.send("gettheme", settings.theme);
+})
+
+ipcMain.on("getcurrenttheme", () => {
+    graphicsWindow.window.webContents.send("getcurrenttheme", settings.theme);
+})
+
+ipcMain.on("getthemes", () => {
+    graphicsWindow.window.webContents.send("getthemes", settings.themes);
 })
 
 app.on('window-all-closed', () => {

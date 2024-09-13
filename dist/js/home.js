@@ -1114,6 +1114,26 @@ async function group() {
     }
 }
 
+async function setTheme() {
+    const setTheme = (name, value) => {
+        document.documentElement.style.setProperty(`--${name}`, value);
+    }
+
+    let theme = await window.api.invoke("getcurrenttheme");
+    let themes = await window.api.invoke("getthemes");
+    for (const [name, values] of Object.entries(themes)) {
+        if (name == theme) {
+            for (const [key, value] of Object.entries(values)) {
+                setTheme(key, value);
+            }
+        }
+    }
+}
+
+window.api.on("applyTheme", setTheme);
+
+setTheme();
+
 window.api.on("cut", cut)
 
 window.api.on("copy", copy)

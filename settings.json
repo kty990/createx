@@ -1,4 +1,37 @@
 {
   "icon": "icon.png",
-  "name": "this is a test"
+  "name": "CreatEx App",
+  "version": "0.0.1",
+  "description": "This is a placeholder description. Replace with your own.",
+  "author": "Ty Kutcher",
+  "theme": "dark",
+  "themes": {
+    "dark": {
+      "body": "#0a0908",
+      "interaction": "#a9927d",
+      "interaction-border": "#5e503f",
+      "element": "#23333b",
+      "text": "#f2f4f3",
+      "text-hover": "#a2a2a2",
+      "selected": "#bb6130"
+    },
+    "light": {
+      "body": "#EFF3FF",
+      "interaction": "#E3E5FD",
+      "interaction-border": "#E0CFFB",
+      "element": "#C8DEF8",
+      "text": "#000000",
+      "text-hover": "#a2a2a2",
+      "selected": "#BED9FC"
+    },
+    "mono": {
+      "body": "#FCF7FF",
+      "interaction": "#C4CAD0",
+      "interaction-border": "#878C8F",
+      "element": "#A4969B",
+      "text": "#000000",
+      "text-hover": "#a2a2a2",
+      "selected": "#655560"
+    }
+  }
 }
