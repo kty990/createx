@@ -9,6 +9,7 @@ const settings = require('./settings.json');
 var licenseData;
 var currentFile;
 var settingsWindow = null;
+var themesWindow = null;
 
 fs.readFile("./license.md", (err, data) => {
     licenseData = data; 0
@@ -28,6 +29,14 @@ class GraphicsWindow {
 
             app.on('ready', async () => {
                 await this.createWindow(html, width, height, forceMax);
+                this.window.once('closed', () => {
+                    if (settingsWindow) {
+                        settingsWindow.window.close();
+                    }
+                    if (themesWindow) {
+                        themesWindow.window.close();
+                    }
+                })
             });
         } catch (e) {
             const { Notification } = require('electron')
@@ -303,6 +312,15 @@ ipcMain.on("minimize_settings", () => {
     settingsWindow.window.minimize();
 })
 
+ipcMain.on("close_theme", () => {
+    themesWindow.window.close();
+})
+
+ipcMain.on("minimize_theme", () => {
+    themesWindow.window.minimize();
+})
+
+
 ipcMain.on("dev-refresh", () => {
     graphicsWindow.window.reload();
 })
@@ -504,6 +522,30 @@ ipcMain.on("getcurrenttheme", () => {
 
 ipcMain.on("getthemes", () => {
     graphicsWindow.window.webContents.send("getthemes", settings.themes);
+})
+
+ipcMain.on("getthemes_themes", () => {
+    themesWindow.window.webContents.send("getthemes_themes", settings.themes);
+})
+
+ipcMain.on("get_theme_by_name", (ev, name) => {
+    themesWindow.window.webContents.send("get_theme_by_name", settings.themes[name]);
+})
+
+ipcMain.on("modifyThemes", () => {
+    if (themesWindow == null) {
+        themesWindow = new GraphicsWindow('./dist/html/themes.html');
+        themesWindow.createWindow('./dist/html/themes.html', 800, 800, false);
+        themesWindow.window.once('closed', () => {
+            themesWindow = null;
+        });
+    }
+})
+
+ipcMain.on("modify-theme-attribute", (ev, d) => {
+    let { theme, attr, value } = d;
+    settings.themes[theme][attr] = value;
+    saveSettings();
 })
 
 app.on('window-all-closed', () => {

@@ -111,7 +111,8 @@
 }
 
 .category>.iconinput,
-.category>.themeinput {
+.category>.themeinput,
+.category>.thememodify {
     display: block;
     width: fit-content;
     height: fit-content;
@@ -126,7 +127,8 @@
 }
 
 .category>.iconinput:hover,
-.category>.themeinput:hover {
+.category>.themeinput:hover,
+.category>.thememodify:hover {
     filter: brightness(0.5);
     cursor: pointer;
     color: var(--text-hover);

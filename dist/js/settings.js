@@ -15,6 +15,7 @@ const versionInput = document.getElementsByClassName("versioninput")[0];
 const descriptionInput = document.getElementsByClassName("descriptioninput")[0];
 const authorInput = document.getElementsByClassName("authorinput")[0];
 const themeInput = document.getElementsByClassName("themeinput")[0];
+const themeModify = document.getElementsByClassName("thememodify")[0];
 const settings_files = document.getElementById("descriptions");
 
 const data = {};
@@ -139,6 +140,10 @@ themeInput.addEventListener("click", async () => {
         })
         settings_files.appendChild(e);
     }
+})
+
+themeModify.addEventListener("click", () => {
+    window.api.send("modifyThemes");
 })
 
 nameInput.addEventListener("input", () => {

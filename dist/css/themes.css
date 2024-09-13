@@ -1,0 +1,105 @@
+#themes {
+    position: fixed;
+    width: 40vw;
+    height: calc(70vh - 30px);
+    top: 50px;
+    right: 5vw;
+    display: flex;
+    flex-direction: column;
+    background-color: aqua;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.theme {
+    width: 80%;
+    height: fit-content;
+    display: flex;
+    flex-direction: column;
+    color: var(--text);
+    border-color: var(--text);
+    border-width: 2px;
+    border-radius: 5px;
+    border-style: solid;
+    padding: 10px;
+    padding-left: 8%;
+    padding-right: 8%;
+}
+
+.theme:hover {
+    color: var(--text-hover);
+    border-color: var(--text-hover);
+    cursor: pointer;
+}
+
+#new {
+    position: fixed;
+    left: 1vw;
+    top: 50px;
+    width: fit-content;
+    font-size: 2vh;
+    height: fit-content;
+    color: var(--text);
+    border-radius: 5px;
+    border-color: var(--text);
+    border-style: solid;
+    border-width: 2px;
+    padding: 4px;
+}
+
+#delete {
+    position: fixed;
+    left: 1vw;
+    font-size: 2vh;
+    top: 100px;
+    width: fit-content;
+    height: fit-content;
+    color: var(--text);
+    border-radius: 5px;
+    border-color: var(--text);
+    border-style: solid;
+    border-width: 2px;
+    padding: 4px;
+}
+
+#new:hover,
+#delete:hover {
+    filter: opacity(0.6);
+    cursor: pointer;
+}
+
+#options {
+    width: 40vw;
+    right: 45vw;
+    bottom: 5vh;
+    height: 90vh;
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+}
+
+.option {
+    width: 80%;
+    height: fit-content;
+    display: flex;
+    flex-direction: column;
+    color: var(--text);
+    border-color: var(--text);
+    border-width: 2px;
+    border-radius: 5px;
+    border-style: solid;
+    padding: 10px;
+    padding-left: 8%;
+    padding-right: 8%;
+    margin-bottom: 5px;
+}
+
+.option:hover {
+    color: var(--text-hover);
+    border-color: var(--text-hover);
+    cursor: pointer;
+}
+
+.option>p {}
+
+.option>input {}
