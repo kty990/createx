@@ -172,8 +172,8 @@ async function exportProject() {
 
     let allComps = [];
     for (const comp of components) {
-        console.log("comp")
-        console.log(comp);
+        // console.log("comp")
+        // console.log(comp);
         let strComp = make(comp);
         allComps.push(strComp);
     }

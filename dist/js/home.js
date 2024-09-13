@@ -76,7 +76,7 @@ class Event {
             this.callbacks[channel] = [];
             return; // Nothing to remove in this instance
         }
-        this.callbacks[channel].splice(this.callbacks.indexOf(cb), 1);
+        this.callbacks[channel].splice(this.callbacks.indexOf(cb), 1); // TODO: this.callbacks is a dict not list
     }
 }
 const _action = new Event();
@@ -988,7 +988,6 @@ dragdrop.addEventListener("click", (e) => {
 })
 
 mEvent.receive('selectedElementChange', () => {
-    console.log('Selected:', selectedElement);
     if (selectedElement.length > 1) {
         // Allow grouping and ungrouping
         document.getElementById("group").classList.remove("disabled");
