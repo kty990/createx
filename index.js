@@ -4,6 +4,7 @@ const fs = require('fs');
 const util = require('util');
 const { build, ActionEvent } = require("./build");
 const groups = require('./dist/groups.json');
+const settings = require('./settings.json');
 
 var licenseData;
 var currentFile;
@@ -103,6 +104,10 @@ ActionEvent.receive('get_js_files', () => {
 
 ActionEvent.receive('get_components', () => {
     ActionEvent.fire('get_components', components);
+})
+
+ActionEvent.receive('get_icon', () => {
+    ActionEvent.fire('get_icon', settings.icon);
 })
 
 async function exportProject() {
@@ -411,7 +416,21 @@ ipcMain.on("get_stored_files", async () => {
 })
 
 ipcMain.on("setIcon", (ev, iconPath) => {
-    fs.writeFile('./icon.txt', iconPath, () => { });
+    settings.icon = iconPath;
+    fs.writeFile('./settings.json', JSON.stringify(settings, null, 2), () => { })
+})
+
+ipcMain.on("setname", (ev, name) => {
+    settings.name = name;
+    fs.writeFile('./settings.json', JSON.stringify(settings, null, 2), () => { })
+})
+
+ipcMain.on("getname", () => {
+    settingsWindow.window.webContents.send("getname", settings.name);
+})
+
+ipcMain.on("geticon", () => {
+    settingsWindow.window.webContents.send("geticon", settings.icon);
 })
 
 app.on('window-all-closed', () => {

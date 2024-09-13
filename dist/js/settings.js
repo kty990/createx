@@ -10,7 +10,16 @@ minimize.addEventListener("click", () => {
 
 
 const iconInput = document.getElementsByClassName("iconinput")[0];
+const nameInput = document.getElementsByClassName("nameinput")[0];
 const settings_files = document.getElementById("descriptions");
+
+const data = {};
+
+main_logic = async () => {
+    data.name = await window.api.invoke("getname");
+    data.icon = await window.api.invoke("geticon");
+    nameInput.value = data.name;
+}
 
 iconInput.addEventListener("click", async () => {
     // TODO: Handle showing only stored images
@@ -21,6 +30,10 @@ iconInput.addEventListener("click", async () => {
             d.classList.add('description');
             let p = document.createElement('p');
             p.textContent = txt;
+            if (txt == data.icon) {
+                d.style.color = 'var(--selected)';
+                d.style.borderColor = 'var(--selected)';
+            }
             d.appendChild(p);
             return d;
         }
@@ -46,4 +59,12 @@ iconInput.addEventListener("click", async () => {
     } catch (e) {
         alert(e);
     }
+})
+
+nameInput.addEventListener("input", () => {
+    window.api.send("setname", nameInput.value);
+})
+
+window.addEventListener("DOMContentLoaded", () => {
+    main_logic();
 })

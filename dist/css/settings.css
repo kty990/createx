@@ -62,8 +62,7 @@
 }
 
 .category {
-    max-width: 80%;
-    width: fit-content;
+    width: calc(80% - 40px);
     height: fit-content;
     display: flex;
     flex-direction: column;
@@ -73,8 +72,9 @@
     border-radius: 5px;
     border-style: solid;
     padding: 10px;
-    padding-left: 50px;
-    padding-right: 50px;
+    padding-left: 20px;
+    padding-right: 20px;
+    margin-bottom: 5px;
 }
 
 .category>.title {
@@ -103,4 +103,10 @@
     filter: brightness(0.5);
     cursor: pointer;
     color: var(--text-hover);
+}
+
+.category>input {
+    background-color: var(--interaction);
+    border-color: var(--interaction-border);
+    color: var(--text);
 }

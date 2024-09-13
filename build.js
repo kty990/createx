@@ -225,7 +225,7 @@ async function build() {
     </html>`
 
 
-    let iconPath = await util.promisify(fs.read)('./icon.txt');
+    let iconPath = await ActionEvent.invoke('get_icon');
     fs.copyFile(`./dist/stored_images/${iconPath}`, `./temp/${formattedDate}/${iconPath}`, (err) => { });
     indexjs = indexjs.replace("//(REPLACE)", `const iconPath = path.join(__dirname, './${iconPath}');
         this.window.setIcon(iconPath);`)
@@ -245,9 +245,9 @@ async function build() {
             platform: 'win32',
             arch: 'x64',
             out: 'packaged_files',
-            name: `${filePaths[0].split(".")[0]}`,
+            name: `${filePaths[0].split(".")[0]}`, // TODO: Change this to the value found in settings.json
             version: '1.0.0', // This probably should have a dynamic component in the future
-            icon: './dist/images/icon.png',
+            icon: `./temp/${formattedDate}/${iconPath}`,
 
             win: {
                 manufacturer: 'Ty Kutcher'
