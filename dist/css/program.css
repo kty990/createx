@@ -116,26 +116,26 @@ div {
     overflow-x: visible;
 }
 
-#directory::-webkit-scrollbar {
+*::-webkit-scrollbar {
     width: 5px;
     background-color: var(--element);
 }
 
-#directory::-webkit-scrollbar-thumb {
+*::-webkit-scrollbar-thumb {
     background-color: var(--interaction);
     border: 2px solid var(--interaction-border);
     border-radius: 5px;
 }
 
-#directory::-webkit-scrollbar-thumb:hover {
+*::-webkit-scrollbar-thumb:hover {
     background-color: var(--interaction-border);
 }
 
-#directory::-webkit-scrollbar-thumb:active {
+*::-webkit-scrollbar-thumb:active {
     background-color: var(--selected);
 }
 
-#directory::-webkit-scrollbar-gutter {
+*::-webkit-scrollbar-gutter {
     width: 5px;
 }
 

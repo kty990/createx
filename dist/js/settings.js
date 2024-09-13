@@ -35,7 +35,7 @@ async function setTheme() {
     }
 }
 
-main_logic = async () => {
+init = async () => {
     data.name = await window.api.invoke("getname");
     data.icon = await window.api.invoke("geticon");
     data.version = await window.api.invoke("getversion");
@@ -158,5 +158,5 @@ authorInput.addEventListener("input", () => {
 })
 
 window.addEventListener("DOMContentLoaded", () => {
-    main_logic();
+    init();
 })
