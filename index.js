@@ -3,6 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const util = require('util');
 const { build, ActionEvent } = require("./build");
+const groups = require('./dist/groups.json');
 
 var licenseData;
 var currentFile;

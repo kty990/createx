@@ -76,7 +76,8 @@ class Event {
             this.callbacks[channel] = [];
             return; // Nothing to remove in this instance
         }
-        this.callbacks[channel].splice(this.callbacks.indexOf(cb), 1); // TODO: this.callbacks is a dict not list
+
+        this.callbacks[channel].splice(this.callbacks[channel].indexOf(cb), 1);
     }
 }
 const _action = new Event();
@@ -1096,23 +1097,7 @@ async function paste() {
     new Notification(`Paste`, `${myComps.map(c => c.constructor.name).join(", ")} pasted from clipboard`);
 }
 
-window.api.on("cut", cut)
-
-window.api.on("copy", copy)
-
-window.api.on("paste", paste)
-
-document.addEventListener("keydown", (ev) => {
-    if (ev.ctrlKey && ev.key.toLowerCase() === "x") {
-        cut();
-    } else if (ev.ctrlKey && ev.key.toLowerCase() == "c") {
-        copy();
-    } else if (ev.ctrlKey && ev.key.toLowerCase() == "v") {
-        paste()
-    }
-});
-
-window.api.on("group", async () => {
+async function group() {
     console.log('SelectedElement:', selectedElement);
     if (selectedElement.length <= 1) return;
     for (let e of selectedElement) {
@@ -1127,7 +1112,27 @@ window.api.on("group", async () => {
     for (let e of selectedElement) {
         e.comp.setGroup(g);
     }
-})
+}
+
+window.api.on("cut", cut)
+
+window.api.on("copy", copy)
+
+window.api.on("paste", paste)
+
+document.addEventListener("keydown", (ev) => {
+    if (ev.ctrlKey && ev.key.toLowerCase() === "x") {
+        cut();
+    } else if (ev.ctrlKey && ev.key.toLowerCase() == "c") {
+        copy();
+    } else if (ev.ctrlKey && ev.key.toLowerCase() == "v") {
+        paste();
+    } else if (ev.ctrlKey && e.key.toLowerCase() == "g") {
+        group();
+    }
+});
+
+window.api.on("group", group);
 
 // Fix the group numbering when ungrouping : TODO
 window.api.on("ungroup", () => {

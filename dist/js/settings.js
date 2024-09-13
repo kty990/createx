@@ -10,37 +10,40 @@ minimize.addEventListener("click", () => {
 
 
 const iconInput = document.getElementsByClassName("iconinput")[0];
-const settings_files = document.getElementById("settings_files");
+const settings_files = document.getElementById("descriptions");
 
 iconInput.addEventListener("click", async () => {
     // TODO: Handle showing only stored images
-    settings_files.innerHTML = "";
-    const make = (txt) => {
-        // <div class="file">
-        //     <p>TEST_FILE.ext</p>
-        // </div>
-        let d = document.createElement("div");
-        d.classList.add('file');
-        let p = document.createElement('p');
-        p.textContent = txt;
-        d.appendChild(p);
-        return d;
-    }
-    let files = await window.api.invoke('get_stored_files');
-    let elements = [];
-    for (let file of files) {
-        let e = make(file);
-        elements.push(e);
-        e.addEventListener("click", () => {
-            for (let f of elements) {
-                if (f != e) {
-                    f.style.color = null;
-                } else {
-                    f.style.color = 'var(--selected)';
+    try {
+        settings_files.innerHTML = "";
+        const make = (txt) => {
+            let d = document.createElement("div");
+            d.classList.add('description');
+            let p = document.createElement('p');
+            p.textContent = txt;
+            d.appendChild(p);
+            return d;
+        }
+        let files = await window.api.invoke('get_stored_files');
+        let elements = [];
+        for (let file of files) {
+            let e = make(file);
+            elements.push(e);
+            e.addEventListener("click", () => {
+                for (let f of elements) {
+                    if (f != e) {
+                        f.style.color = null;
+                        f.style.borderColor = null;
+                    } else {
+                        f.style.color = 'var(--selected)';
+                        f.style.borderColor = 'var(--selected)';
+                    }
                 }
-            }
-            window.api.send("setIcon", file);
-        })
-        settings_files.appendChild(e);
+                window.api.send("setIcon", file);
+            })
+            settings_files.appendChild(e);
+        }
+    } catch (e) {
+        alert(e);
     }
 })

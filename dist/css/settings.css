@@ -26,6 +26,41 @@
     align-items: center;
 }
 
+#descriptions {
+    position: fixed;
+    width: 50vw;
+    height: calc(100vh - 80px);
+    bottom: 0;
+    left: 50vw;
+    padding: 0;
+    padding-top: 50px;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.description {
+    width: 80%;
+    height: fit-content;
+    display: flex;
+    flex-direction: column;
+    color: var(--text);
+    border-color: var(--text);
+    border-width: 2px;
+    border-radius: 5px;
+    border-style: solid;
+    padding: 10px;
+    padding-left: 8%;
+    padding-right: 8%;
+}
+
+.description:hover {
+    color: var(--text-hover);
+    border-color: var(--text-hover);
+    cursor: pointer;
+}
+
 .category {
     max-width: 80%;
     width: fit-content;
