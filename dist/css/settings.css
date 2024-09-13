@@ -26,33 +26,6 @@
     align-items: center;
 }
 
-#settings_files {
-    position: fixed;
-    width: 50vw;
-    height: 80vh;
-    bottom: 0;
-    right: 0;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    border-left-style: solid;
-    border-color: var(--text);
-    border-width: 2px;
-}
-
-.file {
-    width: 90%;
-    padding-left: 10%;
-    color: var(--text);
-    height: fit-content;
-}
-
-.file:hover {
-    color: var(--text-hover);
-    cursor: pointer;
-}
-
 .category {
     max-width: 80%;
     width: fit-content;
