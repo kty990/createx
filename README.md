@@ -8,3 +8,5 @@
 ### Preview
 
 ![preview](./dist/images/preview.png)
+![preview](./dist/images/preview2.png)
+![preview](./dist/images/preview3.png)
