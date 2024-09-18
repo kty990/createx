@@ -175,6 +175,7 @@ class Component {
             height: "10px",
             left: "100px",
             top: "100px",
+            outline: "unset",
             border_radius: "0px",
             border_style: "none",
             border_color: "#fff",
@@ -192,8 +193,6 @@ class Component {
             HOVERbackground: "#000",
             HOVERwidth: "100px",
             HOVERheight: "10px",
-            HOVERleft: "100px",
-            HOVERtop: "100px",
             HOVERborder_radius: "0px",
             HOVERborder_style: "none",
             HOVERborder_color: "#fff",
@@ -378,17 +377,15 @@ class Component {
                         case 'height':
                             property.querySelector("input").placeholder = parseInt(this.properties.height.replace('px', ''));
                         case 'progress':
-                            property.querySelector("input").placeholder = selectedElement[0].comp.progress;
+                            property.querySelector("input").placeholder = this.progress || 'err';
                             break;
-                        case 'src_file':
-                            property.querySelector("input").placeholder = selectedElement[0].comp.properties.src || "src";
-                        case 'src_text':
-                            property.querySelector("input").placeholder = selectedElement[0].comp.properties.src || "src";;
+                        case 'src':
+                            property.querySelector("input").placeholder = this.properties.src || "src";
 
                     }
-                    if (selectedElement[0].comp instanceof ProgressBar && (name == 'background_color')) {
+                    if (this instanceof ProgressBar && (name == 'background_color')) {
                         console.log("YES");
-                        property.querySelector("input").value = selectedElement[0].comp.background;
+                        property.querySelector("input").value = this.background;
                     }
                     directory.appendChild(property);
                 }
@@ -764,7 +761,9 @@ const registry = {
     'ProgressBar': ProgressBar,
     'DropdownMenu': DropdownMenu,
     'Img': Img,
-    'Input': Input
+    'Input': Input,
+    'List': List,
+    'SortedList': SortedList
 }
 
 const properties = {
@@ -786,14 +785,11 @@ const properties = {
         const component = selectedElement[0].comp;
         component.removeDropdown();
     }),
-    'src_file': new Property("File", 'src', 'file', ['Img']),
-    'src_text': new Property("URL", 'src', 'text', ['Img']),
+    'src': new Property("URL", 'src', 'text', ['Img']),
     'alt': new Property("Alt Text", 'alt', 'text', ['Img']),
     'itype': new _Enum('Input Type', 'itype', ["text", "password", "email", "url", "tel", "number", "date", "time", "month", "week", "submit", "reset", "button", "color", "range", "checkbox", "radio", "file"], ['Input']),
     'hover_color': new Property('Hover Color', 'HOVERcolor', 'color', ['*']),
     'hover_bgcolor': new Property('Hover Background', 'HOVERbackground', 'color', ['*']),
-    'hover_x': new Property('Hover X', 'HOVERleft', 'number', ['*']),
-    'hover_y': new Property('Hover Y', 'HOVERtop', 'number', ['*']),
     'hover_width': new Property('Hover Width', 'HOVERwidth', 'number', ['*']),
     'hover_height': new Property('Hover Height', 'HOVERheight', 'number', ['*']),
 }
