@@ -70,7 +70,12 @@ Array.from(options).forEach(o => {
 })
 
 mainEvent.receive("modification", obj => {
-    window.api.send("modify-theme-attribute", { theme: currentThemeName, attr: obj.querySelector("p").textContent.replace(" ", "-").toLowerCase(), value: obj.querySelector("input").value })
+    let data = {
+        theme: currentThemeName,
+        attr: obj.querySelector("p").textContent.replace(" ", "-").toLowerCase(),
+        value: obj.querySelector("input").value
+    };
+    window.api.send("modify-theme-attribute", data)
 })
 
 async function select(element, themeName) {

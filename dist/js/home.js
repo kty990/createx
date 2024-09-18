@@ -167,11 +167,9 @@ class Component {
             this.group = group;
         }
         this.element = null;
-        this.onPropertyChange = (name, value) => {
-            console.log(`====== ${this.constructor.name} Property Change ======\nName: ${name}\nValue:`, value, `\n`);
-        };
         this.properties = {
             color: "#fff",
+            foreground_color: "#000",
             background: "#000",
             width: "100px",
             height: "10px",
@@ -181,7 +179,10 @@ class Component {
             border_style: "none",
             border_color: "#fff",
             border_width: "0px",
+            text_content: "TEXT HERE",
             display: "block",
+            font_size: "1vh",
+            padding: "5px",
             flex_direction: 'row',
             justify_content: "center",
             align_items: "center",
@@ -217,8 +218,16 @@ class Component {
         this.group.addComponent(this);
     }
 
-    setOnPropertyChange(func) {
-        this.onPropertyChange = func;
+    setHovered(bool) {
+        for (const [name, value] of Object.entries(this.properties)) {
+            if (name == 'itype') {
+                this.element.setAttribute('type', value);
+                return;
+            }
+            if ((name.indexOf("HOVER") != -1 && bool) || name.indexOf("HOVER") == -1) {
+                this.element.style.setProperty(name, value);
+            }
+        }
     }
 
     setElement(e) {
@@ -242,26 +251,26 @@ class Component {
         window.api.send("createComponent", myProperties);
         // console.log("Create component", this.name);
         this.element.addEventListener("mouseenter", () => {
+            console.log("MouseEnter", this.name);
             for (const [key, value] of Object.entries(this.properties)) {
                 if (['x', 'y', 'left', 'top', 'type'].includes(key)) continue; // This will change when the project is saved/built
                 if (key.indexOf("HOVER") == -1) continue;
                 this.element.style.setProperty(key, value);
-                // console.log(`Setting ${key} to ${value}`);
+                console.log(`Setting ${key} to ${value}`);
             }
             if (this instanceof ProgressBar) {
                 this.setProgress(this.progress);
             }
         })
         this.element.addEventListener("mouseleave", () => {
+            console.log("MouseLeave", this.name);
             for (const [key, value] of Object.entries(this.properties)) {
                 if (['x', 'y', 'left', 'top', 'type'].includes(key)) continue; // This will change when the project is saved/built
-                if (key.indexOf("HOVER") != -1) continue;
-                if (key == 'backgroundColor' || key == 'background_color') {
+                if (key.indexOf("HOVER") == -1) continue;
+                if (key.replace("HOVER", "") == 'backgroundColor' || key.replace("HOVER", "") == 'background_color') {
                     this.element.style.setProperty('background', value);
-                    // console.log(`Setting background to ${value}`);
                 } else {
-                    this.element.style.setProperty(key, value);
-                    // console.log(`Setting ${key} to ${value}`);
+                    this.element.style.setProperty(key.replace("HOVER", ""), value);
                 }
             }
             if (this instanceof ProgressBar) {
@@ -424,7 +433,7 @@ class Component {
                     this.element.style.setProperty(property.indexName, value);
                 }
             }
-            this.onPropertyChange(name, value, this.element);
+            this.elementEvent.fire('propertyChange', true, name, value, this.element);
             // console.log("Sending properties change: ");
             // console.log(JSON.stringify(this.properties));
             window.api.send("editComponent", this.name, JSON.stringify(this.properties));
@@ -486,8 +495,7 @@ class Img extends Component {
     constructor(parent, group = undefined) {
         super("Image", parent, group);
         this.preview.type = 'img';
-        this.setOnPropertyChange((name, value, element) => {
-            console.log(`====== Property Change ======\nName: ${name}\nValue: ${value}\n`);
+        this.elementEvent.receive("propertyChange", (name, value, element) => {
             if (name == 'src') element.src = value;
             if (name == 'alt') element.alt = value;
         })
@@ -498,11 +506,44 @@ class Input extends Component {
     constructor(parent, group = undefined) {
         super("Input", parent, group);
         this.preview.type = 'input';
-        this.setOnPropertyChange((name, value, element) => {
-            console.log(`====== Property Change ======\nName: ${name}\nValue: ${value}\n`);
+        this.elementEvent.receive("propertyChange", (name, value, element) => {
             if (name == 'value') element.value = value;
             if (name == 'placeholder') element.placeholder = value;
         })
+
+        this.elementEvent.once("set", e => {
+            e.readOnly = false;
+        })
+    }
+}
+
+const list_type = {
+    'column': 0,
+    'row': 1
+}
+
+class List extends Component {
+    sorted = false;
+
+    /**
+     * 
+     * @param {Component | null} parent 
+     * @param {number} listType -- 0=column, 1=row
+     * @param {Group | undefined} group 
+     */
+    constructor(parent, sorted = false, listType = list_type['row'], group = undefined) {
+        super(`${(sorted) ? 'Sorted' : 'Unsorted'} List`, parent, group);
+        this.listType = listType;
+        this.preview.type = 'List';
+        this.preview.text_content = '';
+    }
+}
+
+class SortedList extends List {
+    sorted = true;
+    constructor(parent, listType = undefined, group = undefined) {
+        super(parent, true, listType, group);
+        this.preview.type = 'List';
     }
 }
 
@@ -513,9 +554,13 @@ class ProgressBar extends Component {
         this.background = "#7d7d7d";
         this.preview.type = 'div';
         let p = [];
+        this.elementEvent.receive('propertyChange', (name, value, element) => {
+            this.setProgress(this.progress);
+            element.style.setProperty("background", this.properties.background);
+        })
         for (let i = 0; i < 101; i++) {
             if (i <= 60) {
-                p.push("#0f0");
+                p.push(this.properties.foreground_color);
             } else {
                 p.push(this.background);
             }
@@ -527,7 +572,7 @@ class ProgressBar extends Component {
         let p = [];
         for (let i = 0; i < 101; i++) {
             if (i <= progress) {
-                p.push(this.properties.color || "#0f0");
+                p.push(this.properties.foreground_color);
             } else {
                 p.push(this.background);
             }
@@ -660,7 +705,7 @@ class Property {
     activate() { }
 }
 
-class Enum extends Property {
+class _Enum extends Property {
     constructor(name, options = [], allowedComponents = [], enumSelected = (element, name, inputElement) => { }) {
         super(name, 'enum', 'ENUM', allowedComponents);
         this.options = options;
@@ -725,8 +770,9 @@ const registry = {
 const properties = {
     'name': new Property('Name', 'name', 'text', ['*']),
     'color': new Property('Color', 'color', 'color', ['*']),
+    'foreground_color': new Property("Foreground", 'foreground_color', 'color', ["*"]),
     'background_color': new Property("Background", 'background', 'color', ['*']),
-    'textContent': new Property('Text', 'textContent', 'text', ['Text']),
+    'textContent': new Property('Text', 'textContent', 'text', ['*']),
     'x': new Property('X', 'left', 'number', ['*']),
     'y': new Property('Y', 'top', 'number', ['*']),
     'width': new Property('Width', 'width', 'number', ['*']),
@@ -743,7 +789,7 @@ const properties = {
     'src_file': new Property("File", 'src', 'file', ['Img']),
     'src_text': new Property("URL", 'src', 'text', ['Img']),
     'alt': new Property("Alt Text", 'alt', 'text', ['Img']),
-    'itype': new Enum('Input Type', 'itype', ["text", "password", "email", "url", "tel", "number", "date", "time", "month", "week", "submit", "reset", "button", "color", "range", "checkbox", "radio", "file"], ['Input']),
+    'itype': new _Enum('Input Type', 'itype', ["text", "password", "email", "url", "tel", "number", "date", "time", "month", "week", "submit", "reset", "button", "color", "range", "checkbox", "radio", "file"], ['Input']),
     'hover_color': new Property('Hover Color', 'HOVERcolor', 'color', ['*']),
     'hover_bgcolor': new Property('Hover Background', 'HOVERbackground', 'color', ['*']),
     'hover_x': new Property('Hover X', 'HOVERleft', 'number', ['*']),
@@ -789,7 +835,9 @@ const library = [
     new ProgressBar(null, 'null'),
     new DropdownMenu(null, null, 'null'),
     new Img(null, 'null'),
-    new Input(null, 'null')
+    new Input(null, 'null'),
+    new List(null),
+    new SortedList(null),
 ]
 
 // Main logic
@@ -798,6 +846,9 @@ for (let component of library) {
     let comp = document.createElement("div");
     comp.classList.add('component');
     let e = document.createElement(preview.type);
+    if (preview.type.toLowerCase() == "input") {
+        e.readOnly = true;
+    }
 
     for (const [key, value] of Object.entries(preview)) {
         if (key == 'height' || key == 'width') {
@@ -914,12 +965,12 @@ propertyApply.addEventListener("click", () => {
                     c.setProperty(p.name, v, p.property);
                     if (p.name == "textContent") {
                         se.element.textContent = v;
-                        console.warn(`Setting ${p.name} to ${v}`);
+                        // console.warn(`Setting ${p.name} to ${v}`);
                     } else if (p.name == 'x') {
                         se.element.style.left = `${v}px`;
-                        console.warn(`Setting ${p.name} to ${v}`);
+                        // console.warn(`Setting ${p.name} to ${v}`);
                     } else if (p.name == 'y') {
-                        console.warn(`Setting ${p.name} to ${v}`);
+                        // console.warn(`Setting ${p.name} to ${v}`);
                         se.element.style.top = `${v}px`;
                     } else if (p.name == 'progress') {
                         se.comp.setProgress(v);
@@ -943,6 +994,9 @@ propertyApply.addEventListener("click", () => {
                             let hex = rgbToHex(values[0], values[1], values[2]);
                             p.element.value = hex;
                             // console.log(hex);
+                            break;
+                        case 'foregroundColor':
+                            p.element.value = c.properties.foreground_color;
                             break;
                         case 'backgroundColor':
                             p.element.value = c.element.style.backgroundColor;
@@ -1147,7 +1201,7 @@ document.addEventListener("keydown", (ev) => {
         copy();
     } else if (ev.ctrlKey && ev.key.toLowerCase() == "v") {
         paste();
-    } else if (ev.ctrlKey && e.key.toLowerCase() == "g") {
+    } else if (ev.ctrlKey && ev.key.toLowerCase() == "g") {
         group();
     }
 });
