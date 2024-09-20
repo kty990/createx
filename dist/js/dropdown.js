@@ -76,6 +76,10 @@ window.api.on("fullscreen", () => {
     window.api.send("toggleFullscreen");
 })
 
+window.api.on("debug", () => {
+    window.api.send("debug");
+})
+
 
 /*** COMPONENTS ***/
 

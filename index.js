@@ -5,11 +5,13 @@ const util = require('util');
 const { build, ActionEvent } = require("./build");
 const groups = require('./dist/groups.json');
 const settings = require('./settings.json');
+const { debug } = require('console');
 
 var licenseData;
 var currentFile;
 var settingsWindow = null;
 var themesWindow = null;
+var debugWindow = null;
 
 fs.readFile("./license.md", (err, data) => {
     licenseData = data; 0
@@ -35,6 +37,9 @@ class GraphicsWindow {
                     }
                     if (themesWindow) {
                         themesWindow.window.close();
+                    }
+                    if (debugWindow) {
+                        debugWindow.window.close();
                     }
                 })
             });
@@ -547,6 +552,33 @@ ipcMain.on("modify-theme-attribute", (ev, d) => {
     settings.themes[theme][attr] = value;
     saveSettings();
 })
+
+
+ipcMain.on("debug", async (ev) => {
+    if (debugWindow == null) {
+        debugWindow = new GraphicsWindow('./dist/html/debug.html', 400, 800, true);
+        await debugWindow.createWindow('./dist/html/debug.html', 400, 800, true);
+        debugWindow.window.once('closed', () => {
+            debugWindow = null;
+        })
+    }
+})
+
+
+ipcMain.on("redisplay", (ev, properties) => {
+    if (debugWindow != null) {
+        debugWindow.window.webContents.send("redisplay", properties);
+    }
+})
+
+
+
+
+
+
+
+
+
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') {

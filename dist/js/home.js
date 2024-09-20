@@ -235,12 +235,9 @@ class Component {
         // this.setProperty('position', 'absolute', null);
         this.setProperty('overflow', 'hidden', null);
         this.setProperty('position', 'fixed');
-        let setting = "";
         for (const [key, value] of Object.entries(this.element.style)) {
             if (this.properties[key]) {
-                setting += `${key} = ${value}\nHOVER${key} = ${value}\n\n`;
                 this.properties[`${key}`] = value;
-                this.properties[`HOVER${key}`] = value;
             }
         }
         // console.log('Setting:', setting);
@@ -250,31 +247,31 @@ class Component {
         window.api.send("createComponent", myProperties);
         // console.log("Create component", this.name);
         this.element.addEventListener("mouseenter", () => {
-            console.log("MouseEnter", this.name);
             for (const [key, value] of Object.entries(this.properties)) {
-                if (['x', 'y', 'left', 'top', 'type'].includes(key)) continue; // This will change when the project is saved/built
-                if (key.indexOf("HOVER") == -1) continue;
-                this.element.style.setProperty(key, value);
-                console.log(`Setting ${key} to ${value}`);
+                if (['x', 'y', 'left', 'top', 'type'].includes(key)) continue;
+                if (key.indexOf("HOVER") == -1) continue; // Don't display 
+                this.element.style.setProperty(key.replace("HOVER", ''), value);
             }
             if (this instanceof ProgressBar) {
                 this.setProgress(this.progress);
             }
+            window.api.send("redisplay", this.properties);
         })
         this.element.addEventListener("mouseleave", () => {
             console.log("MouseLeave", this.name);
             for (const [key, value] of Object.entries(this.properties)) {
                 if (['x', 'y', 'left', 'top', 'type'].includes(key)) continue; // This will change when the project is saved/built
-                if (key.indexOf("HOVER") == -1) continue;
-                if (key.replace("HOVER", "") == 'backgroundColor' || key.replace("HOVER", "") == 'background_color') {
+                if (key.indexOf("HOVER") != -1) continue;
+                if (key == 'backgroundColor' || key == 'background_color') {
                     this.element.style.setProperty('background', value);
                 } else {
-                    this.element.style.setProperty(key.replace("HOVER", ""), value);
+                    this.element.style.setProperty(key, value);
                 }
             }
             if (this instanceof ProgressBar) {
                 this.setProgress(this.progress);
             }
+            window.api.send("redisplay", this.properties);
         })
 
         let down = false;
@@ -947,6 +944,7 @@ for (let component of library) {
 
 propertyApply.addEventListener("click", () => {
     if (dragdrop.style.zIndex != '2') return;
+    let setProperties = {};
     if (selectedElement.length >= 1) {
         for (let se of selectedElement) {
             const c = se.comp;
@@ -959,6 +957,7 @@ propertyApply.addEventListener("click", () => {
                         continue;
                     }
                     c.setProperty(p.name, v, p.property);
+                    setProperties[p.name] = v;
                     if (p.name == "textContent") {
                         se.element.textContent = v;
                         // console.warn(`Setting ${p.name} to ${v}`);
@@ -1026,6 +1025,7 @@ propertyApply.addEventListener("click", () => {
         }
 
     }
+    window.api.send("redisplay", setProperties);
 })
 
 dragdrop.addEventListener("click", (e) => {
