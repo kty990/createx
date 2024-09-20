@@ -20,6 +20,15 @@
     color: var(--text-hover) !important;
 }
 
+#notif-con {
+    display: flex;
+    flex-direction: column-reverse;
+    position: fixed;
+    bottom: 7px;
+    right: 7px;
+    height: 80vh;
+}
+
 body {
     background-color: #fff;
     outline: unset;

@@ -159,6 +159,10 @@ class Group {
 class Component {
     static ID = 0;
     elementEvent = new Event();
+    properties = {}
+    group = undefined
+    element = null
+    selected = false
     constructor(name, parent, group = undefined) {
         this.name = name;
         this.id = ++Component.ID;
@@ -207,7 +211,7 @@ class Component {
         }
         this.preview = this.properties;
         this.children = [];
-        if (this.parent) {
+        if (this.parent && !typeof this.parent == 'string') {
             this.parent.children.push(this);
         }
     }
@@ -218,14 +222,28 @@ class Component {
     }
 
     setHovered(bool) {
+        // alert((this instanceof ProgressBar))
         for (const [name, value] of Object.entries(this.properties)) {
             if (name == 'itype') {
                 this.element.setAttribute('type', value);
                 return;
             }
             if ((name.indexOf("HOVER") != -1 && bool) || name.indexOf("HOVER") == -1) {
-                this.element.style.setProperty(name, value);
+                this.element.style.setProperty(name.replace("HOVER", ""), value);
+
             }
+        }
+        if (this instanceof ProgressBar) {
+            let p = [];
+            for (let i = 0; i < 101; i++) {
+                if (i <= this.progress) {
+                    p.push((bool == false) ? this.properties.foreground_color : this.properties.HOVERforeground_color);
+                } else {
+                    p.push((bool == false) ? this.properties.background_color : this.properties.HOVERbackground);
+                }
+            }
+            // console.error(this.progress);
+            this.element.style.setProperty('background', `linear-gradient(90deg, ${p.join(",")})`);
         }
     }
 
@@ -247,30 +265,11 @@ class Component {
         window.api.send("createComponent", myProperties);
         // console.log("Create component", this.name);
         this.element.addEventListener("mouseenter", () => {
-            for (const [key, value] of Object.entries(this.properties)) {
-                if (['x', 'y', 'left', 'top', 'type'].includes(key)) continue;
-                if (key.indexOf("HOVER") == -1) continue; // Don't display 
-                this.element.style.setProperty(key.replace("HOVER", ''), value);
-            }
-            if (this instanceof ProgressBar) {
-                this.setProgress(this.progress);
-            }
+            this.setHovered(true);
             window.api.send("redisplay", this.properties);
         })
         this.element.addEventListener("mouseleave", () => {
-            console.log("MouseLeave", this.name);
-            for (const [key, value] of Object.entries(this.properties)) {
-                if (['x', 'y', 'left', 'top', 'type'].includes(key)) continue; // This will change when the project is saved/built
-                if (key.indexOf("HOVER") != -1) continue;
-                if (key == 'backgroundColor' || key == 'background_color') {
-                    this.element.style.setProperty('background', value);
-                } else {
-                    this.element.style.setProperty(key, value);
-                }
-            }
-            if (this instanceof ProgressBar) {
-                this.setProgress(this.progress);
-            }
+            this.setHovered(false);
             window.api.send("redisplay", this.properties);
         })
 
@@ -282,14 +281,14 @@ class Component {
             if (e.target != this.element) return;
             down = true;
             offsets = {};
-            console.log(`Down: ${this.group.components.length}`, this.group);
+            // console.log(`Down: ${this.group.components.length}`, this.group);
             for (let comp of this.group.components) {
                 let offset = {};
                 offset.x = Math.abs(parseInt(`${comp.properties.left}`.replace('px', '')) - e.clientX); // TODO: Change to relative offset of tmp instead of abs offset
                 offset.y = Math.abs(parseInt(`${comp.properties.top}`.replace('px', '')) - e.clientY);
                 offsets[`${comp.id}`] = offset;
             }
-            console.warn(offsets);
+            // console.warn(offsets);
         })
 
         document.addEventListener("mouseup", (e) => {
@@ -307,7 +306,7 @@ class Component {
 
         document.addEventListener("mousemove", (e) => {
             if (down) {
-                console.log('Moving');
+                // console.log('Moving');
                 for (let comp of this.group.components) {
                     let x = e.clientX - offsets[`${comp.id}`].x;
                     let y = e.clientY - offsets[`${comp.id}`].y;
@@ -315,7 +314,7 @@ class Component {
                     comp.setProperty('top', `${y}px`);
                 }
             } else if (e.target == this.element) {
-                console.log("NOPE");
+                // console.log("NOPE");
             }
         })
         this.element.addEventListener("mouseenter", () => {
@@ -381,13 +380,13 @@ class Component {
 
                     }
                     if (this instanceof ProgressBar && (name == 'background_color')) {
-                        console.log("YES");
+                        // console.log("YES");
                         property.querySelector("input").value = this.background;
                     }
                     directory.appendChild(property);
                 }
             }
-            console.log(displayedProperties);
+            // console.log(displayedProperties);
             compType.textContent = `${getTypeOf(this)}`;
         })
     }
@@ -728,7 +727,7 @@ class _Enum extends Property {
                 p.textContent = `Input Type\n(${o.toUpperCase()})`;
                 // dd.style.display = 'none';
                 // this.visible = 'hidden';
-                console.log(`${o} selected in enum. Hiding dropdown`);
+                // console.log(`${o} selected in enum. Hiding dropdown`);
             })
         }
         tmp.addEventListener("click", () => {
@@ -740,7 +739,7 @@ class _Enum extends Property {
             }
             this.element.querySelector("div").style.display = (this.visible == 'visible') ? 'flex' : 'none';
             this.element.style.height = (this.visible) ? 'fit-content' : `${this.height || 10}px`;
-            console.log(this.visible);
+            // console.log(this.visible);
         })
         tmp.appendChild(dd);
         this.element = tmp;
@@ -751,6 +750,8 @@ class _Enum extends Property {
         this.onEnumSelected = func;
     }
 }
+
+export { DropdownMenu, ProgressBar, SortedList, List, Input, Img, Text, Button, Component, Event, Group }
 
 const registry = {
     'Button': Button,
@@ -786,6 +787,7 @@ const properties = {
     'alt': new Property("Alt Text", 'alt', 'text', ['Img']),
     'itype': new _Enum('Input Type', 'itype', ["text", "password", "email", "url", "tel", "number", "date", "time", "month", "week", "submit", "reset", "button", "color", "range", "checkbox", "radio", "file"], ['Input']),
     'hover_color': new Property('Hover Color', 'HOVERcolor', 'color', ['*']),
+    'hover_foreground_color': new Property("Foreground", 'HOVERforeground_color', 'color', ["*"]),
     'hover_bgcolor': new Property('Hover Background', 'HOVERbackground', 'color', ['*']),
     'hover_width': new Property('Hover Width', 'HOVERwidth', 'number', ['*']),
     'hover_height': new Property('Hover Height', 'HOVERheight', 'number', ['*']),
@@ -889,7 +891,7 @@ for (let component of library) {
     }
 
     function onDown(ev) {
-        console.log("Down");
+        // console.log("Down");
         isDown = true;
         previewElement = e.cloneNode(true);
         previewElement.style.position = 'fixed';
@@ -902,7 +904,7 @@ for (let component of library) {
     comp.addEventListener("mousedown", onDown);
 
     document.body.addEventListener("mouseup", (e) => {
-        console.log("Up");
+        // console.log("Up");
         if (!isDown) return;
         isDragging = false;
         isDown = false;
@@ -932,7 +934,7 @@ for (let component of library) {
             c.setGroup(new Group());
             if (c instanceof DropdownMenu) {
                 c.activate();
-                console.warn("Activated");
+                // console.warn("Activated");
             }
 
             dragdropComponents.push(c);
@@ -953,7 +955,7 @@ propertyApply.addEventListener("click", () => {
                 if (p.type == 'property') {
                     let v = p.property.element.querySelector("input").value;
                     if (`${v}`.length == 0 || v == null || v == undefined) {
-                        console.log("Continue", p.name, `${v}`, p.property.element);
+                        // console.log("Continue", p.name, `${v}`, p.property.element);
                         continue;
                     }
                     c.setProperty(p.name, v, p.property);
@@ -970,7 +972,7 @@ propertyApply.addEventListener("click", () => {
                     } else if (p.name == 'progress') {
                         se.comp.setProgress(v);
                     } else {
-                        console.warn(`Setting ${p.name} to ${v}`);
+                        // console.warn(`Setting ${p.name} to ${v}`);
                         if (se.comp instanceof ProgressBar && p.name == 'background_color') {
                             // console.log("YES");
                             se.comp.background = v;
@@ -1069,7 +1071,7 @@ async function cut() {
     }
     // Store the element string to keyboard (window.api.send)
     let result = await window.api.invoke("_copy", data.join("(SPLIT)"));
-    console.warn(result);
+    // console.warn(result);
     // Delete element from drag-drop and from local memory
     for (let e of selectedElement) {
         e.element.remove();
@@ -1095,7 +1097,7 @@ async function copy() {
     }
     // Store the element string to keyboard (window.api.send)
     let result = await window.api.invoke("_copy", data.join("(SPLIT)"));
-    console.warn(result);
+    // console.warn(result);
     new Notification(`Copy`, `${selectedElement.length} elements copied to clipboard`);
 }
 
@@ -1105,13 +1107,13 @@ async function paste() {
     let groups = {};
     let comps = data.split("(SPLIT)");
     let myComps = [];
-    console.warn(comps);
+    // console.warn(comps);
     for (let c of comps) {
         let obj = JSON.parse(c);
         let c_obj = new registry[obj.typeof](null); // Null parent
-        console.log(c_obj, 1);
+        // console.log(c_obj, 1);
         c_obj.setElement(c_obj.createElement());
-        console.log(c_obj, 2);
+        // console.log(c_obj, 2);
         for (const [key, value] of Object.entries(obj)) {
             if (key == 'properties') {
                 for (const [p, v] of Object.entries(value)) {
@@ -1148,7 +1150,7 @@ async function paste() {
 }
 
 async function group() {
-    console.log('SelectedElement:', selectedElement);
+    // console.log('SelectedElement:', selectedElement);
     if (selectedElement.length <= 1) return;
     for (let e of selectedElement) {
         if (e.comp.group) {
@@ -1165,16 +1167,17 @@ async function group() {
 }
 
 async function setTheme() {
-    const setTheme = (name, value) => {
+    const _setTheme = (name, value) => {
         document.documentElement.style.setProperty(`--${name}`, value);
     }
 
     let theme = await window.api.invoke("getcurrenttheme");
     let themes = await window.api.invoke("getthemes");
+    window.api.send("notify", `Theme set to ${theme}`);
     for (const [name, values] of Object.entries(themes)) {
         if (name == theme) {
             for (const [key, value] of Object.entries(values)) {
-                setTheme(key, value);
+                _setTheme(key, value);
             }
         }
     }
@@ -1214,4 +1217,51 @@ window.api.on("ungroup", () => {
         e.comp.group.destroy()
         e.comp.setGroup(new Group());
     }
-}) 
+})
+const notifCon = document.getElementById("notif-con");
+window.api.on("notify", (message, color = "var(--text)") => {
+    // console.log("notify", message, color);
+    let main = document.createElement("div");
+    let p = {
+        background_color: '#000000',
+        filter: "opacity(0.7)",
+        border_radius: "7px",
+        border_color: color,
+        border_style: "solid",
+        border_width: "2px",
+        z_index: '99999',
+        padding: "5px"
+    }
+    for (const [key, value] of Object.entries(p)) {
+        main.style.setProperty(key.replace("_", "-"), value);
+    }
+    let title = document.createElement("p");
+    title.textContent = "Notification";
+    title.style.setProperty("top", "0px");
+    title.style.setProperty("left", "0px");
+    title.style.setProperty("margin", "0px");
+    title.style.setProperty("padding", "0px");
+    title.style.setProperty("width", "100%");
+    title.style.setProperty("height", "fit-content");
+    title.style.setProperty("font-size", "1.75vh");
+    title.style.setProperty("color", "#fff");
+    title.style.setProperty("font-weight", "bold");
+    title.style.setProperty("text-align", "center");
+    main.appendChild(title);
+    let desc = document.createElement("p");
+    desc.textContent = message;
+    desc.style.setProperty("bottom", "0px");
+    desc.style.setProperty("left", "0px");
+    desc.style.setProperty("margin", "0px");
+    desc.style.setProperty("padding", "6px");
+    desc.style.setProperty("width", "100%");
+    desc.style.setProperty("height", "calc(100% - 1.1vh)");
+    desc.style.setProperty("font-size", "1.75vh");
+    desc.style.setProperty("color", "#fff");
+    main.appendChild(desc);
+
+    notifCon.appendChild(main);
+    setTimeout(() => {
+        main.remove();
+    }, 3000);
+})

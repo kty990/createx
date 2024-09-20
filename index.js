@@ -406,6 +406,7 @@ ipcMain.on("upload", async () => {
         fs.copyFile(fp, `./dist/stored_images/${path}`, (err) => {
             console.log((err == null) ? `${fp} copied to ./dist/stored_images successfully.` : `${fp} couldn't be copied to ./dist/stored_images\n\tError: ${err}`);
         });
+        graphicsWindow.window.webContents.send("notify", `${fp} uploaded`);
     })
 
 })
@@ -452,6 +453,7 @@ ipcMain.on("get_stored_files", async () => {
 
 function saveSettings() {
     fs.writeFile('./settings.json', JSON.stringify(settings, null, 2), () => { })
+    graphicsWindow.window.webContents.send("notify", "Settings updated");
 }
 
 ipcMain.on("setIcon", (ev, iconPath) => {
@@ -564,6 +566,28 @@ ipcMain.on("debug", async (ev) => {
     }
 })
 
+ipcMain.on("getfiles_indirectory", async (ev, mypath) => {
+    function getFilesInDirectory(directoryPath) {
+        return new Promise((resolve, reject) => {
+            fs.readdir(directoryPath, (err, files) => {
+                if (err) {
+                    reject(err);
+
+                } else {
+                    const filePaths = files.map(file => path.join(directoryPath, file));
+                    resolve(filePaths);
+                }
+            });
+        });
+    }
+    graphicsWindow.window.webContents.send("getfiles_indirectory", await getFilesInDirectory(mypath))
+})
+
+ipcMain.on("notify", (ev, message, color) => {
+    // TODO: this
+    console.log("notify", message, color);
+    graphicsWindow.window.webContents.send("notify", message, color);
+})
 
 ipcMain.on("redisplay", (ev, properties) => {
     if (debugWindow != null) {

@@ -1,3 +1,4 @@
+const keywords = {};
 const code_storage = {
     files: [],
     visual: document.getElementById("editor"),
@@ -48,3 +49,40 @@ code_storage.newFileButton.addEventListener("click", async () => {
 code_storage.tab.addEventListener("click", () => {
     displayFiles();
 })
+
+
+async function getKeywords() {
+    return new Promise(async (resolve) => {
+        let files = await window.api.invoke("getfiles_indirectory", './dist/js/');
+        for (let file of files) {
+            let f = file.split("\\");
+            f = f[2];
+            if (!['home.js'].includes(f)) continue;
+            import(`./${f}`).then(imp => {
+                // Get keywords from import
+                for (const [property, value] of Object.entries(imp)) {
+                    keywords[property] = [];
+                    let test = new value();
+                    var propertyNames = Object.getOwnPropertyNames(Object.getPrototypeOf(test));
+                    if (test.destroy) {
+                        test.destroy();
+                    }
+                    for (const [p, v] of Object.entries(test)) {
+                        keywords[property].push({ type: 'property', name: p, value: v })
+                    }
+                    for (let funcName of propertyNames) {
+                        if (funcName != "constructor") {
+                            keywords[property].push({ type: 'function', value: funcName })
+                        }
+                    }
+                }
+            }).catch((e) => {
+                console.error(e);
+            }).finally(() => {
+                resolve()
+            })
+        }
+    })
+}
+
+getKeywords();
