@@ -228,9 +228,15 @@ class Component {
                 this.element.setAttribute('type', value);
                 return;
             }
-            if ((name.indexOf("HOVER") != -1 && bool) || name.indexOf("HOVER") == -1) {
-                this.element.style.setProperty(name.replace("HOVER", ""), value);
-
+            if (bool) {
+                if (name.indexOf("HOVER") != -1) {
+                    this.element.style.setProperty(name.replace("HOVER", ""), value);
+                }
+            } else {
+                if (name.indexOf("HOVER") == -1) {
+                    this.element.style.setProperty(name, value);
+                    console.warn(`On Unhover: ${name}||${value}`);
+                }
             }
         }
         if (this instanceof ProgressBar) {
@@ -394,9 +400,7 @@ class Component {
     copy() {
         let t = this.constructor.name;
         let tmp = new registry[t];
-        for (const [key, value] of Object.entries(this)) {
-            tmp[key] = value;
-        }
+        tmp.properties = Object.assign({}, this.properties);
         return tmp;
     }
 
@@ -963,23 +967,8 @@ propertyApply.addEventListener("click", () => {
                     if (p.name == "textContent") {
                         se.element.textContent = v;
                         // console.warn(`Setting ${p.name} to ${v}`);
-                    } else if (p.name == 'x') {
-                        se.element.style.left = `${v}px`;
-                        // console.warn(`Setting ${p.name} to ${v}`);
-                    } else if (p.name == 'y') {
-                        // console.warn(`Setting ${p.name} to ${v}`);
-                        se.element.style.top = `${v}px`;
                     } else if (p.name == 'progress') {
                         se.comp.setProgress(v);
-                    } else {
-                        // console.warn(`Setting ${p.name} to ${v}`);
-                        if (se.comp instanceof ProgressBar && p.name == 'background_color') {
-                            // console.log("YES");
-                            se.comp.background = v;
-                            se.comp.setProgress(se.comp.progress);
-                        } else {
-                            se.element.style.setProperty(p.name, `${v}${(p.name == 'width' || p.name == 'height') ? 'px' : ''}`);
-                        }
                     }
                     switch (p.name) {
                         case 'name':
@@ -1102,7 +1091,6 @@ async function copy() {
 }
 
 async function paste() {
-    // TODO: Handle groups and then handle adding to dragdrop
     let data = await window.api.invoke("getClipboard");
     let groups = {};
     let comps = data.split("(SPLIT)");
@@ -1207,7 +1195,6 @@ document.addEventListener("keydown", (ev) => {
 
 window.api.on("group", group);
 
-// Fix the group numbering when ungrouping : TODO
 window.api.on("ungroup", () => {
     if (selectedElement.length <= 1) return;
     for (let e of selectedElement) {

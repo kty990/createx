@@ -52,7 +52,6 @@ init = async () => {
 }
 
 iconInput.addEventListener("click", async () => {
-    // TODO: Handle showing only stored images
     try {
         settings_files.innerHTML = "";
         const make = (txt) => {

@@ -417,7 +417,6 @@ ipcMain.on("toggleFullscreen", () => {
 
 ipcMain.on("settings", () => {
     console.log("Settings");
-    // TODO: New window with settings to change for createx, not for created applications
     if (settingsWindow == null) {
         settingsWindow = new GraphicsWindow('./dist/html/settings.html');
         settingsWindow.createWindow('./dist/html/settings.html', 400, 800, true);
@@ -584,7 +583,6 @@ ipcMain.on("getfiles_indirectory", async (ev, mypath) => {
 })
 
 ipcMain.on("notify", (ev, message, color) => {
-    // TODO: this
     console.log("notify", message, color);
     graphicsWindow.window.webContents.send("notify", message, color);
 })
