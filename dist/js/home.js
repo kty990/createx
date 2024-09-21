@@ -789,7 +789,7 @@ const properties = {
     }),
     'src': new Property("URL", 'src', 'text', ['Img']),
     'alt': new Property("Alt Text", 'alt', 'text', ['Img']),
-    'itype': new _Enum('Input Type', 'itype', ["text", "password", "email", "url", "tel", "number", "date", "time", "month", "week", "submit", "reset", "button", "color", "range", "checkbox", "radio", "file"], ['Input']),
+    'itype': new _Enum('Input Type', ["text", "password", "email", "url", "tel", "number", "date", "time", "month", "week", "submit", "reset", "button", "color", "range", "checkbox", "radio", "file"], ['Input']),
     'hover_color': new Property('Hover Color', 'HOVERcolor', 'color', ['*']),
     'hover_foreground_color': new Property("Foreground", 'HOVERforeground_color', 'color', ["*"]),
     'hover_bgcolor': new Property('Hover Background', 'HOVERbackground', 'color', ['*']),

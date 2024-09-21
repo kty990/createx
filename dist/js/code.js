@@ -86,3 +86,34 @@ async function getKeywords() {
 }
 
 getKeywords();
+
+
+
+// Auto-fill suggestions
+
+/**
+ * TODO: Modify this so if a selection is not present, get the word closest, and take in 'typing' boolean arg
+ * @returns {string}
+ */
+function getCurrentSelectionWord() {
+    return window.getSelection().toString();
+}
+
+/**
+ * Get the cursor position on the screen for the auto-fill suggestion box to go underneath
+ */
+function getCursorPosition() {
+    // Get the cursor position within the textEditable element
+    const selection = window.getSelection();
+    const range = selection.getRangeAt(0);
+
+    // Get the element's position relative to the window
+    const rect = element.getBoundingClientRect();
+
+    // Calculate the cursor position relative to the window
+    const cursorX = rect.left + range.getClientRect(0).left;
+    const cursorY = rect.top + range.getClientRect(0).top;
+
+    return { x: cursorX, y: cursorY };
+}
+
