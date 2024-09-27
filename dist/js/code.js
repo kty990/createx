@@ -96,7 +96,17 @@ getKeywords();
  * @returns {string}
  */
 function getCurrentSelectionWord() {
-    return window.getSelection().toString();
+    let select = window.getSelection();
+    let selectionString = select.toString();
+    if (selectionString.length == 0) {
+        let range = document.getSelection().getRangeAt(0);
+        let preCaretRange = range.cloneRange();
+        preCaretRange.selectNodeContents(myDiv);
+        preCaretRange.setEnd(range.endContainer, range.endOffset);
+        return preCaretRange.toString();
+    } else {
+        return selectionString;
+    }
 }
 
 /**

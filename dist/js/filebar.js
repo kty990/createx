@@ -13,6 +13,12 @@ values.forEach(value => {
     value.querySelector('div').querySelector('p').addEventListener("mouseenter", (e) => {
         value.querySelector('div').querySelector('p').style.color = "var(--text-hover)";
         value.querySelector('div').querySelector('p').style.cursor = "pointer";
+
+        if (lastActive != null) {
+            lastActive.querySelector('.dropdown').style.visibility = 'hidden';
+            value.querySelector('.dropdown').style.visibility = 'visible';
+            lastActive = value;
+        }
     })
 
     value.querySelector('div').querySelector('p').addEventListener("mouseleave", (e) => {
